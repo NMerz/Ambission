@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8574113D2C3DC83F004FD8DE /* EditClipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8574113C2C3DC83F004FD8DE /* EditClipView.swift */; };
+		8594177A2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
+		8594177B2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
+		8594177C2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
+		8594177F2C2CA95C001FDE32 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 8594177E2C2CA95C001FDE32 /* FirebaseFunctions */; };
+		859417812C2F8EDA001FDE32 /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417802C2F8EDA001FDE32 /* RecordView.swift */; };
+		859417822C2F8EDA001FDE32 /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417802C2F8EDA001FDE32 /* RecordView.swift */; };
+		859417832C2F8EDA001FDE32 /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417802C2F8EDA001FDE32 /* RecordView.swift */; };
+		859417902C330F6F001FDE32 /* CameraActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8594178F2C330F6F001FDE32 /* CameraActor.swift */; };
+		859417912C330F6F001FDE32 /* CameraActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8594178F2C330F6F001FDE32 /* CameraActor.swift */; };
+		859417922C330F6F001FDE32 /* CameraActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8594178F2C330F6F001FDE32 /* CameraActor.swift */; };
+		859417942C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417932C34B18C001FDE32 /* ScriptGenerationView.swift */; };
+		859417952C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417932C34B18C001FDE32 /* ScriptGenerationView.swift */; };
+		859417962C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859417932C34B18C001FDE32 /* ScriptGenerationView.swift */; };
 		85DB7C602C2C95A10007E01A /* VideoResumeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C5F2C2C95A10007E01A /* VideoResumeApp.swift */; };
 		85DB7C622C2C95A10007E01A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C612C2C95A10007E01A /* ContentView.swift */; };
 		85DB7C642C2C95A20007E01A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85DB7C632C2C95A20007E01A /* Assets.xcassets */; };
@@ -14,6 +28,12 @@
 		85DB7C712C2C95A20007E01A /* VideoResumeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C702C2C95A20007E01A /* VideoResumeTests.swift */; };
 		85DB7C7B2C2C95A20007E01A /* VideoResumeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C7A2C2C95A20007E01A /* VideoResumeUITests.swift */; };
 		85DB7C7D2C2C95A20007E01A /* VideoResumeUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C7C2C2C95A20007E01A /* VideoResumeUITestsLaunchTests.swift */; };
+		85DB7C8A2C2C9B3F0007E01A /* SegmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C892C2C9B3F0007E01A /* SegmentView.swift */; };
+		85F7E2712C39F292000BA7DB /* Poster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2702C39F292000BA7DB /* Poster.swift */; };
+		85F7E2742C39F377000BA7DB /* Authorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2732C39F377000BA7DB /* Authorizer.swift */; };
+		85F7E2762C39F38A000BA7DB /* DolbyAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2752C39F38A000BA7DB /* DolbyAuthorizer.swift */; };
+		85F7E2782C39FFA2000BA7DB /* BasicAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */; };
+		85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2792C3C6F13000BA7DB /* Poll.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +54,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8574113C2C3DC83F004FD8DE /* EditClipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditClipView.swift; sourceTree = "<group>"; };
+		859417792C2CA90E001FDE32 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		859417802C2F8EDA001FDE32 /* RecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
+		8594178F2C330F6F001FDE32 /* CameraActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraActor.swift; sourceTree = "<group>"; };
+		859417932C34B18C001FDE32 /* ScriptGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptGenerationView.swift; sourceTree = "<group>"; };
 		85DB7C5C2C2C95A10007E01A /* VideoResume.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoResume.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85DB7C5F2C2C95A10007E01A /* VideoResumeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoResumeApp.swift; sourceTree = "<group>"; };
 		85DB7C612C2C95A10007E01A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -44,6 +69,12 @@
 		85DB7C762C2C95A20007E01A /* VideoResumeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoResumeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		85DB7C7A2C2C95A20007E01A /* VideoResumeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoResumeUITests.swift; sourceTree = "<group>"; };
 		85DB7C7C2C2C95A20007E01A /* VideoResumeUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoResumeUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		85DB7C892C2C9B3F0007E01A /* SegmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentView.swift; sourceTree = "<group>"; };
+		85F7E2702C39F292000BA7DB /* Poster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poster.swift; sourceTree = "<group>"; };
+		85F7E2732C39F377000BA7DB /* Authorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorizer.swift; sourceTree = "<group>"; };
+		85F7E2752C39F38A000BA7DB /* DolbyAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DolbyAuthorizer.swift; sourceTree = "<group>"; };
+		85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicAuthorizer.swift; sourceTree = "<group>"; };
+		85F7E2792C3C6F13000BA7DB /* Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poll.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8594177F2C2CA95C001FDE32 /* FirebaseFunctions in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,13 +103,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8594177D2C2CA95C001FDE32 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		85DB7C532C2C95A10007E01A = {
 			isa = PBXGroup;
 			children = (
+				859417792C2CA90E001FDE32 /* GoogleService-Info.plist */,
 				85DB7C5E2C2C95A10007E01A /* VideoResume */,
 				85DB7C6F2C2C95A20007E01A /* VideoResumeTests */,
 				85DB7C792C2C95A20007E01A /* VideoResumeUITests */,
 				85DB7C5D2C2C95A10007E01A /* Products */,
+				8594177D2C2CA95C001FDE32 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,10 +135,16 @@
 		85DB7C5E2C2C95A10007E01A /* VideoResume */ = {
 			isa = PBXGroup;
 			children = (
+				85F7E26F2C39F24F000BA7DB /* REST */,
 				85DB7C5F2C2C95A10007E01A /* VideoResumeApp.swift */,
 				85DB7C612C2C95A10007E01A /* ContentView.swift */,
 				85DB7C632C2C95A20007E01A /* Assets.xcassets */,
 				85DB7C652C2C95A20007E01A /* Preview Content */,
+				85DB7C892C2C9B3F0007E01A /* SegmentView.swift */,
+				859417802C2F8EDA001FDE32 /* RecordView.swift */,
+				8594178F2C330F6F001FDE32 /* CameraActor.swift */,
+				859417932C34B18C001FDE32 /* ScriptGenerationView.swift */,
+				8574113C2C3DC83F004FD8DE /* EditClipView.swift */,
 			);
 			path = VideoResume;
 			sourceTree = "<group>";
@@ -127,6 +174,26 @@
 			path = VideoResumeUITests;
 			sourceTree = "<group>";
 		};
+		85F7E26F2C39F24F000BA7DB /* REST */ = {
+			isa = PBXGroup;
+			children = (
+				85F7E2722C39F367000BA7DB /* Authorizers */,
+				85F7E2702C39F292000BA7DB /* Poster.swift */,
+				85F7E2792C3C6F13000BA7DB /* Poll.swift */,
+			);
+			path = REST;
+			sourceTree = "<group>";
+		};
+		85F7E2722C39F367000BA7DB /* Authorizers */ = {
+			isa = PBXGroup;
+			children = (
+				85F7E2732C39F377000BA7DB /* Authorizer.swift */,
+				85F7E2752C39F38A000BA7DB /* DolbyAuthorizer.swift */,
+				85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */,
+			);
+			path = Authorizers;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,6 +210,9 @@
 			dependencies = (
 			);
 			name = VideoResume;
+			packageProductDependencies = (
+				8594177E2C2CA95C001FDE32 /* FirebaseFunctions */,
+			);
 			productName = VideoResume;
 			productReference = 85DB7C5C2C2C95A10007E01A /* VideoResume.app */;
 			productType = "com.apple.product-type.application";
@@ -215,6 +285,9 @@
 				Base,
 			);
 			mainGroup = 85DB7C532C2C95A10007E01A;
+			packageReferences = (
+				859417782C2CA256001FDE32 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			productRefGroup = 85DB7C5D2C2C95A10007E01A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -233,6 +306,7 @@
 			files = (
 				85DB7C672C2C95A20007E01A /* Preview Assets.xcassets in Resources */,
 				85DB7C642C2C95A20007E01A /* Assets.xcassets in Resources */,
+				8594177A2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +314,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8594177B2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +322,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8594177C2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,7 +333,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85F7E2742C39F377000BA7DB /* Authorizer.swift in Sources */,
 				85DB7C622C2C95A10007E01A /* ContentView.swift in Sources */,
+				859417942C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */,
+				85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */,
+				859417902C330F6F001FDE32 /* CameraActor.swift in Sources */,
+				859417812C2F8EDA001FDE32 /* RecordView.swift in Sources */,
+				85F7E2782C39FFA2000BA7DB /* BasicAuthorizer.swift in Sources */,
+				85F7E2712C39F292000BA7DB /* Poster.swift in Sources */,
+				85F7E2762C39F38A000BA7DB /* DolbyAuthorizer.swift in Sources */,
+				85DB7C8A2C2C9B3F0007E01A /* SegmentView.swift in Sources */,
+				8574113D2C3DC83F004FD8DE /* EditClipView.swift in Sources */,
 				85DB7C602C2C95A10007E01A /* VideoResumeApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -267,6 +353,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				85DB7C712C2C95A20007E01A /* VideoResumeTests.swift in Sources */,
+				859417952C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */,
+				859417822C2F8EDA001FDE32 /* RecordView.swift in Sources */,
+				859417912C330F6F001FDE32 /* CameraActor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,6 +364,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				85DB7C7B2C2C95A20007E01A /* VideoResumeUITests.swift in Sources */,
+				859417832C2F8EDA001FDE32 /* RecordView.swift in Sources */,
+				859417962C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */,
+				859417922C330F6F001FDE32 /* CameraActor.swift in Sources */,
 				85DB7C7D2C2C95A20007E01A /* VideoResumeUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -425,6 +517,9 @@
 				DEVELOPMENT_TEAM = LNF77PC4UL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used to capture video resume segments";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used to capture audio for resume segments";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app needs access to your photo library to export the completed video";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -454,6 +549,9 @@
 				DEVELOPMENT_TEAM = LNF77PC4UL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used to capture video resume segments";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used to capture audio for resume segments";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app needs access to your photo library to export the completed video";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -588,6 +686,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		859417782C2CA256001FDE32 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.28.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8594177E2C2CA95C001FDE32 /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 859417782C2CA256001FDE32 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 85DB7C542C2C95A10007E01A /* Project object */;
 }
