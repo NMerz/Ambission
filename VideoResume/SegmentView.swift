@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Photos
 import AVKit
+import PhotosUI
 
 
 struct GetSignedUrlRequest: Codable {
@@ -57,115 +58,206 @@ struct SegmentView: View, Hashable {
     
     @State var navPath: Binding<NavigationPath>
     
-    let segments: [String]
+    @State var segments: [String]
     @State var segmentUrls: [String:URL] = [:]
     @State var videoStates: [String:[String]] = [:]
+    @State var segmentText: [String: String]
 
-    
+    init(navPath: Binding<NavigationPath>, segmentText: [String: String]) {
+        self.navPath = navPath
+        var segments: [String] = []
+        for keyVal in segmentText.keys {
+            segments.append(keyVal)
+        }
+        self.segments = segments.sorted()
+        self.segmentText = segmentText
+    }
     
     var body: some View {
-        ScrollView {
-            ForEach(segments, id: \.self) { segment in
-                VStack {
-                    Text(segment)
-                    if segmentUrls[segment] == nil {
-                        RoundedRectangle(cornerRadius: 5).strokeBorder(style: .init(lineWidth: 1, dash: [12, 12])).frame(height: 60).overlay {
-                                Button("record section") {
-                                    try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
-                                    navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
-                                        segmentUrls[segment]
-                                    }, set: { newUrl in
-                                        segmentUrls[segment] = newUrl
-                                        videoStates[segment] = []
-                                    }), promptText: segment))
+        GeometryReader{ reader in
+            VStack {
+                List($segments, id: \.self, editActions: .all) { segment in
+                    VStack {
+                        TextField("", text: Binding(get: {
+                            print(segment.wrappedValue)
+                            print(segmentText)
+                            return segmentText[segment.wrappedValue]!
+                        }, set: { newValue in
+                            segmentText[segment.wrappedValue] = newValue
+                        }), axis: .vertical)
+                        if segmentUrls[segment.wrappedValue] == nil {
+                            HStack {
+                                RoundedRectangle(cornerRadius: 5).strokeBorder(style: .init(lineWidth: 1, dash: [12, 12])).frame(height: 60).overlay {
+                                    Button("record section") {
+                                        try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
+                                        navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
+                                            segmentUrls[segment.wrappedValue]
+                                        }, set: { newUrl in
+                                            segmentUrls[segment.wrappedValue] = newUrl
+                                            videoStates[segment.wrappedValue] = []
+                                        }), promptText: segmentText[segment.wrappedValue]!))
+                                    }.buttonStyle(PlainButtonStyle())
+                                    
                                 }
-                        }
-                    } else {
-                        HStack {
-                            Spacer().frame(minWidth: 10, maxWidth: .infinity)
-                            Button(action: {
-                                navPath.wrappedValue.append(EditClipView(navPath: navPath, outputUrl: Binding(get: {
-                                    segmentUrls[segment]!
-                                }, set: { newUrl in
-                                    segmentUrls[segment] = newUrl
-                                    videoStates[segment] = []
-                                })))
-                            }) {
-                                Image(systemName: "scissors").resizable()
-                            }.frame(width: 30, height: 30)
-                            Spacer().frame(minWidth: 10, maxWidth: .infinity)
-                            VideoPlayer(player: AVPlayer(url: segmentUrls[segment]!)).frame(width: 200, height: 200 * 16/9).ignoresSafeArea(.all).id(segmentUrls[segment])
-                            Spacer().frame(minWidth: 10, maxWidth: .infinity)
-                            Button(action: {
-                                navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
-                                    segmentUrls[segment]
-                                }, set: { newUrl in
-                                    videoStates[segment] = []
-                                    segmentUrls[segment] = newUrl
-                                }), promptText: segment))
-                            }) {
-                                Image(systemName: "arrow.triangle.2.circlepath").resizable()
-                            }.frame(width: 30, height: 30)
-                            Spacer().frame(minWidth: 10, maxWidth: .infinity)
-                        }
-                    }
-//                    Text(String(describing: segmentUrls[segment]))
-                    if segmentUrls[segment] != nil {
-                        Button(action: {
-                            PHPhotoLibrary.shared().performChanges {
-                                let options = PHAssetResourceCreationOptions()
-                                options.shouldMoveFile = true
-                                let creationRequest = PHAssetCreationRequest.forAsset()
-                                creationRequest.addResource(with: .video, fileURL: segmentUrls[segment]!, options: options)
-                                videoStates[segment]?.append("exported")
+                                Spacer().frame(width: 10)
+                                PhotosPicker(selection: Binding(get: {
+                                    print("unexpected get")
+                                    return nil
+                                }, set: { newPick in
+                                    videoStates[segment.wrappedValue] = []
+                                    VideoModel(videoUrls: $segmentUrls, updateKey: segment.wrappedValue).newRecipeVideo = newPick
+                                }), matching: .videos, photoLibrary: .shared()) {
+                                    Image(systemName: "square.and.arrow.down").resizable().scaledToFit()
+                                }.frame(width: 30, height: 30)
+                                Spacer().frame(width: 10)
                             }
-                        }, label: {
-                            if videoStates[segment]!.contains(["exported"]) {
-                                Text("Export again").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            } else {
-                                Text("Export").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                        } else {
+                            HStack {
+                                Spacer().frame(width: 10)
+                                Button(action: {
+                                    navPath.wrappedValue.append(EditClipView(navPath: navPath, outputUrl: Binding(get: {
+                                        segmentUrls[segment.wrappedValue]!
+                                    }, set: { newUrl in
+                                        segmentUrls[segment.wrappedValue] = newUrl
+                                        videoStates[segment.wrappedValue] = []
+                                    })))
+                                }) {
+                                    Image(systemName: "scissors").resizable()
+                                }.frame(width: 30, height: 30).buttonStyle(PlainButtonStyle())
+                                Spacer().frame(width: 10)
+                                VideoPlayer(player: AVPlayer(url: segmentUrls[segment.wrappedValue]!)).frame(width: 200, height: 200 * 16/9).ignoresSafeArea(.all).id(segmentUrls[segment.wrappedValue])
+                                Spacer().frame(width: 10)
+                                PhotosPicker(selection: Binding(get: {
+                                    print("unexpected get")
+                                    return nil
+                                }, set: { newPick in
+                                    videoStates[segment.wrappedValue] = []
+                                    VideoModel(videoUrls: $segmentUrls, updateKey: segment.wrappedValue).newRecipeVideo = newPick
+                                }), matching: .videos, photoLibrary: .shared()) {
+                                    Image(systemName: "square.and.arrow.down").resizable().scaledToFit()
+                                }.frame(width: 30, height: 30)
+                                Spacer().frame(width: 10)
+                                Button(action: {
+                                    navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
+                                        segmentUrls[segment.wrappedValue]
+                                    }, set: { newUrl in
+                                        videoStates[segment.wrappedValue] = []
+                                        segmentUrls[segment.wrappedValue] = newUrl
+                                    }), promptText: segmentText[segment.wrappedValue]!))
+                                }) {
+                                    Image(systemName: "arrow.triangle.2.circlepath").resizable()
+                                }.frame(width: 30, height: 30).buttonStyle(PlainButtonStyle())
+                                Spacer().frame(width: 10)
                             }
-                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                        if !videoStates[segment]!.contains(["background-free"]) {
+                        }
+                        //                    Text(String(describing: segmentUrls[segment]))
+                        if segmentUrls[segment.wrappedValue] != nil {
                             Button(action: {
-                                Task {
-                                    let inputUrl = "dlb://" + UUID().uuidString + ".mov"
-                                    print(inputUrl)
-                                    do {
-                                        let dolbyAuthorizer = DolbyAuthorizer()
-                                        let signedUrlDict = try await Poster.postFor([String: String].self, requestURL: URL(string: "https://api.dolby.com/media/input")!, postContent: GetSignedUrlRequest(url: inputUrl), authorizer: dolbyAuthorizer)
-                                        print(signedUrlDict)
-                                        try await Poster.putFile(segmentUrls[segment]!, destination: URL(string: signedUrlDict["url"]!)!)
-                                        let outputUrl = "dlb://" + UUID().uuidString + ".mov"
-                                        let enhanceJobDict = try await Poster.postFor([String: String].self, requestURL:  URL(string: "https://api.dolby.com/media/enhance")!, postContent: DolbyEnhanceRequest(input: inputUrl, output: outputUrl, audio: DolbyAudioChange(speech: DoblySpeechChange(isolation: DolbyIsolationChange(enable: true, amount: 100)))), authorizer: dolbyAuthorizer)
-                                        print(enhanceJobDict)
-                                        let pollUrl = "https://api.dolby.com/media/enhance?job_id=" + enhanceJobDict["job_id"]!
-                                        try await Poll.monitor(URL(string: pollUrl)!, responseType: JobStatusResponse.self, authorizer: dolbyAuthorizer)
-                                        print("ready")
-                                        let newLocalUrl = try await Poster.downloadFile("https://api.dolby.com/media/output", params: ["url": outputUrl], authorizer: dolbyAuthorizer)
-                                        print(newLocalUrl)
-                                        let newPermanentDirectory = FileManager().temporaryDirectory.appending(path: UUID().uuidString + ".mov")
-                                        try FileManager().moveItem(at: newLocalUrl, to: newPermanentDirectory)
-                                        print(newPermanentDirectory)
-                                        videoStates[segment] = ["background-free"]
-                                        segmentUrls[segment] = newPermanentDirectory
-                                    } catch {
-                                        print(error)
-                                    }
+                                PHPhotoLibrary.shared().performChanges {
+                                    let options = PHAssetResourceCreationOptions()
+                                    options.shouldMoveFile = false
+                                    let creationRequest = PHAssetCreationRequest.forAsset()
+                                    creationRequest.addResource(with: .video, fileURL: segmentUrls[segment.wrappedValue]!, options: options)
+                                    videoStates[segment.wrappedValue]?.append("exported")
                                 }
                             }, label: {
-                                Text("Remove background noise").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+                                if videoStates[segment.wrappedValue]!.contains(["exported"]) {
+                                    Text("Export again").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                                } else {
+                                    Text("Export").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                                }
+                            }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
+                            if !videoStates[segment.wrappedValue]!.contains(["background-free"]) {
+                                Button(action: {
+                                    Task {
+                                        let inputUrl = "dlb://" + UUID().uuidString + ".mov"
+                                        print(inputUrl)
+                                        do {
+                                            let dolbyAuthorizer = DolbyAuthorizer()
+                                            let signedUrlDict = try await Poster.postFor([String: String].self, requestURL: URL(string: "https://api.dolby.com/media/input")!, postContent: GetSignedUrlRequest(url: inputUrl), authorizer: dolbyAuthorizer)
+                                            print(signedUrlDict)
+                                            try await Poster.putFile(segmentUrls[segment.wrappedValue]!, destination: URL(string: signedUrlDict["url"]!)!)
+                                            let outputUrl = "dlb://" + UUID().uuidString + ".mov"
+                                            let enhanceJobDict = try await Poster.postFor([String: String].self, requestURL:  URL(string: "https://api.dolby.com/media/enhance")!, postContent: DolbyEnhanceRequest(input: inputUrl, output: outputUrl, audio: DolbyAudioChange(speech: DoblySpeechChange(isolation: DolbyIsolationChange(enable: true, amount: 100)))), authorizer: dolbyAuthorizer)
+                                            print(enhanceJobDict)
+                                            let pollUrl = "https://api.dolby.com/media/enhance?job_id=" + enhanceJobDict["job_id"]!
+                                            try await Poll.monitor(URL(string: pollUrl)!, responseType: JobStatusResponse.self, authorizer: dolbyAuthorizer)
+                                            print("ready")
+                                            let newLocalUrl = try await Poster.downloadFile("https://api.dolby.com/media/output", params: ["url": outputUrl], authorizer: dolbyAuthorizer)
+                                            print(newLocalUrl)
+                                            let newPermanentDirectory = FileManager().temporaryDirectory.appending(path: UUID().uuidString + ".mov")
+                                            try FileManager().moveItem(at: newLocalUrl, to: newPermanentDirectory)
+                                            print(newPermanentDirectory)
+                                            videoStates[segment.wrappedValue] = ["background-free"]
+                                            segmentUrls[segment.wrappedValue] = newPermanentDirectory
+                                        } catch {
+                                            print(error)
+                                        }
+                                    }
+                                }, label: {
+                                    Text("Remove background noise").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                                }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
+                            }
                         }
+                        Spacer().frame(height:20)
                     }
-                    Spacer().frame(height:20)
-                }
+                }.listStyle(.plain).frame(height: max(200, reader.size.height - 50))
+                Button(action: {
+                    Task {
+                        let finalMovie = AVMutableComposition()
+                        var currentTime = CMTime.zero
+                        let audioTrack = finalMovie.addMutableTrack(withMediaType: .audio, preferredTrackID: CMPersistentTrackID(1))
+                        let videoTrack = finalMovie.addMutableTrack(withMediaType: .video, preferredTrackID: CMPersistentTrackID(2))
+                        let videoRotationComposition = AVMutableVideoComposition()
+                        let compositionInstruction = AVMutableVideoCompositionInstruction()
+                        for segment in segments {
+                            if segmentUrls[segment] == nil {
+                                continue
+                            }
+                            let segmentMovie = AVURLAsset(url: segmentUrls[segment]!)
+                            let segmentDuration = try await segmentMovie.load(.duration)
+                            
+                            try audioTrack?.insertTimeRange(CMTimeRange(start: .zero, duration: segmentDuration), of: try await segmentMovie.loadTracks(withMediaType: .audio)[0], at: currentTime)
+                            let segmentVideoTrack = try await segmentMovie.loadTracks(withMediaType: .video)[0]
+                            
+                            
+                            try videoTrack?.insertTimeRange(CMTimeRange(start: .zero, duration: segmentDuration), of: segmentVideoTrack, at: currentTime)
+
+                            let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack!)
+                            let preferredTransform = try await segmentVideoTrack.load(.preferredTransform)
+                            layerInstruction.setTransform(preferredTransform, at: currentTime)
+
+                            
+                            currentTime = CMTimeAdd(currentTime, segmentDuration)
+                            layerInstruction.setOpacity(0.0, at: currentTime)
+                            print(currentTime)
+                            compositionInstruction.layerInstructions.append(layerInstruction)
+                            print("layer instructions")
+                            print(compositionInstruction.layerInstructions)
+                        }
+                        compositionInstruction.timeRange = videoTrack!.timeRange
+                        videoRotationComposition.instructions = [compositionInstruction]
+                        videoRotationComposition.renderSize = CGSize(width: 1080, height: 1920)
+
+                        videoRotationComposition.frameDuration = CMTimeMake(value: 1, timescale: videoTrack!.naturalTimeScale)
+                        
+                        let exportSession = AVAssetExportSession(asset: finalMovie, presetName: AVAssetExportPreset1920x1080)!
+                        exportSession.outputURL = FileManager().temporaryDirectory.appending(path: UUID().uuidString + ".mov")
+                        exportSession.outputFileType = .mov
+                        exportSession.videoComposition = videoRotationComposition
+                        await exportSession.export()
+                        navPath.wrappedValue.append(PreviewView(navPath: navPath, outputUrl: exportSession.outputURL!))
+                    }
+                }, label: {
+                    Text("Combine segments").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                }).navigationDestination(for: PreviewView.self) { newView in
+                    newView
+                }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+            }.navigationDestination(for: RecordView.self) { newView in
+            newView
+            }.navigationDestination(for: EditClipView.self) { newView in
+                newView
             }
-            
-        }.navigationDestination(for: RecordView.self) { newView in
-            newView
-        }.navigationDestination(for: EditClipView.self) { newView in
-            newView
         }
     }
 }
@@ -176,5 +268,60 @@ struct SegmentView: View, Hashable {
         navPath
     }, set: { newNavPath in
         navPath = newNavPath
-    }), segments: ["intro", "job 1", "job 2", "job3", "call to action"])
+    }), segmentText: ["1": "intro", "2": "job 1", "3": "job 2", "4": "job3", "5": "call to action"])
+}
+
+
+
+class VideoModel {
+    var videoUrls: Binding<[String: URL]>
+    var updateKey: String
+    
+    var newRecipeVideo: Optional<PhotosPickerItem> {
+        didSet {
+            if newRecipeVideo == nil {
+                return
+            }
+            Task {
+                let upLoadableRecipeVideo = try await newRecipeVideo!.loadTransferable(type: UploadableVideo.self)
+                if upLoadableRecipeVideo == nil {
+                    return
+                }
+                await MainActor.run {
+                    videoUrls.wrappedValue[updateKey] = upLoadableRecipeVideo!.videoUrl
+                }
+            }
+        }
+    }
+    
+    class VideoSaveError: Error {
+        
+    }
+    
+    struct UploadableVideo: Transferable {
+        let videoUrl: URL
+        
+        static var transferRepresentation: some TransferRepresentation {
+            FileRepresentation(importedContentType: .movie) { movieFile in
+                let movieFile = movieFile.file
+                let baseDir = FileManager().temporaryDirectory
+                let pathAvailableOutsideClosure = baseDir.appendingPathComponent(UUID().uuidString + "." + movieFile.pathExtension)
+                print(pathAvailableOutsideClosure)
+                do {
+                    try FileManager.default.copyItem(at: movieFile, to: pathAvailableOutsideClosure)
+                } catch {
+                    print(error)
+                    throw VideoSaveError()
+                }
+                
+                
+                return self.init(videoUrl: pathAvailableOutsideClosure)
+            }
+        }
+    }
+    init(videoUrls: Binding<[String: URL]>, updateKey: String) {
+        self.videoUrls = videoUrls
+        self.updateKey = updateKey
+        self.newRecipeVideo = nil
+    }
 }

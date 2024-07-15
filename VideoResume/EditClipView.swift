@@ -27,7 +27,7 @@ struct EditClipView: View, Hashable {
     @State var displaySideChoice: Bool = false
     @State var height: CGFloat = 200
     @State var width: CGFloat = 100
-    
+    @State var left = false
     
     init(navPath: Binding<NavigationPath>, outputUrl: Binding<URL>) {
         self.navPath = navPath
@@ -76,7 +76,10 @@ struct EditClipView: View, Hashable {
                     Spacer().frame(maxWidth: .infinity)
                     Button(action: {
                         outputUrl.wrappedValue = currentUrl
-                        navPath.wrappedValue.removeLast()
+                        if !left {
+                            navPath.wrappedValue.removeLast()
+                            left = true
+                        }
                     }, label: {
                         Image(systemName: "checkmark").resizable().scaledToFit()
                     }).frame(width: 40, height: 40)
@@ -123,7 +126,8 @@ struct EditClipView: View, Hashable {
                     }
                 }.frame(width: width * 0.8, height: 200)
             }
-        }.preferredColorScheme(.dark).toolbar(.hidden, for: .navigationBar)
+        }.preferredColorScheme(.dark)
+//            .toolbar(.hidden, for: .navigationBar)
     }
 }
 

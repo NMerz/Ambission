@@ -57,7 +57,7 @@ actor CameraActor {
     }
 
     func setUpCaptureSession() async throws {
-        guard await CameraActor.isAuthorized else { throw "not authorized to use camera+mic" }
+        guard await CameraActor.isAuthorized else { throw CameraError("not authorized to use camera+mic") }
         if setup {
             return
         }
@@ -67,23 +67,23 @@ actor CameraActor {
 //        captureSession.beginConfiguration()
         
         if AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) == nil {
-            throw "no camera"
+            throw CameraError("no camera")
         }
         let defaultCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front)!
         guard
             let videoDeviceInput = try? AVCaptureDeviceInput(device: defaultCamera),
             captureSession.canAddInput(videoDeviceInput)
-            else { throw "bad input setting" }
+            else { throw CameraError("bad input setting") }
         captureSession.addInput(videoDeviceInput)
         
         if AVCaptureDevice.default(for: .audio) == nil {
-            throw "no camera"
+            throw CameraError("no camera")
         }
         let defaultMic = AVCaptureDevice.default(for: .audio)!
         guard
             let audioDeviceInput = try? AVCaptureDeviceInput(device: defaultMic),
             captureSession.canAddInput(audioDeviceInput)
-            else { throw "bad input setting" }
+            else { throw CameraError("bad input setting") }
         captureSession.addInput(audioDeviceInput)
         
 
@@ -116,5 +116,11 @@ actor CameraActor {
             movieOutput.setOutputSettings([AVVideoCodecKey: AVVideoCodecType.hevc], for: connection)
         }
         return recordingUrl
+    }
+}
+
+class CameraError: Error {
+    init (_ errorString: String) {
+        print(errorString)
     }
 }

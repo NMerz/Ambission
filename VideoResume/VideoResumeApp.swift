@@ -35,7 +35,7 @@ struct JumperView: View  {
     var body: some View {
 
         NavigationStack(path: $navPath) {
-            SegmentView(navPath: $navPath, segments: ["intro", "job 1", "job 2", "job3", "call to action"])
+            SegmentView(navPath: $navPath, segmentText: ["1": "intro", "2": "job 1", "3": "job 2", "4": "job3", "5": "call to action"])
 //            EditClipView(navPath: $navPath, outputUrl: Binding(get: {
 //                return FileManager().temporaryDirectory.appending(path: "11F0F2EC-821D-4F22-9BCF-9E906B0F1141.mov")
 //            }, set: { newValue in

@@ -65,14 +65,23 @@ struct ScriptGenerationView: View, Hashable {
             Spacer().frame(width: 20)
         }
         Button(action: {
-            navPath.wrappedValue.append(SegmentView(navPath: navPath, segments: script.split(separator: "\n").map({ segment in
-                return String(segment)
-            })))
+            navPath.wrappedValue.append(SegmentView(navPath: navPath, segmentText: getScriptSegments(script: script)))
         }, label: {
             Text("Proceed to video studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
         }).navigationDestination(for: SegmentView.self) { newView in
             newView
         }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+    }
+    
+    func getScriptSegments(script: String) -> [String: String] {
+        let scriptSentences = script.split(separator: "\n")
+        var counter = 0
+        var orderableMapping: [String: String] = [:]
+        for scriptSentence in scriptSentences {
+            counter += 1
+            orderableMapping[String(counter)] = String(scriptSentence)
+        }
+        return orderableMapping
     }
 }
 

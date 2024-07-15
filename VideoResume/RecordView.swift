@@ -11,9 +11,9 @@ import SwiftUI
 import AVKit
 
 
-extension String: Error {
-    
-}
+//extension String: Error {
+//    
+//}
 
 protocol PreviewSource: Sendable {
     // Connects a preview destination to this source.
