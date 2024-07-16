@@ -94,6 +94,12 @@ struct RecordView: View, Hashable {
     let promptText: String
     let cameraActor = CameraActor.shared
     @State var player: AVPlayer?
+    @State var size = 12.0
+    @State var width:CGFloat = 100
+    @State var height: CGFloat = 200
+    @State var scrollingOffset: CGFloat = 0
+    @State var textHeight: CGFloat = 20
+    @State var scrollTime = 10.0
     
     var body: some View {
         ZStack {
@@ -103,8 +109,45 @@ struct RecordView: View, Hashable {
                 }.ignoresSafeArea(.all)
             } else {
                 if state != .settingUp {
-                    VideoPreview(previewSource: cameraActor.previewSource).ignoresSafeArea(.all).overlay(.black.opacity(0.5))
-                    Text(promptText).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center).font(.system(size: 500)).minimumScaleFactor(0.01).lineLimit(13).offset(y: -50).foregroundStyle(.white)
+                    VideoPreview(previewSource: cameraActor.previewSource).ignoresSafeArea(.all).overlay(.black.opacity(0.5)).overlay {
+                        Text(promptText).font(.system(size: size, design: .monospaced)).fixedSize(horizontal: false, vertical: true).frame(width: width, alignment: .topLeading).offset(y: textHeight / 2 - height / 2 + 30 - scrollingOffset).foregroundStyle(.white).background {
+                            GeometryReader{ reader in
+                                Color.clear.preference(key: RecordViewTextSize.self, value: reader.frame(in: .global).size)
+                            }.onPreferenceChange(RecordViewTextSize.self) { size in
+                                textHeight = size.height
+                            }
+                        } // Sizing is causing trouble here unless this is an overlay
+                    }
+                    
+                    if state != .recording {
+                        VStack {
+                            HStack {
+                                Text("A").font(.system(size: 18))
+                                Slider(value: Binding(get: {
+                                    return size / 192.0
+                                }, set: { newSize in
+                                    size = round(newSize * 192.0)
+                                    print(size)
+                                })).frame(width: 200, height: 30)
+                                Text("A").font(.system(size: 24))
+                            }
+                            Spacer().frame(maxHeight: .infinity)
+                        }
+                        HStack {
+                            Spacer().frame(maxWidth: .infinity)
+                            VStack (alignment: .leading) {
+                                Image(systemName: "tortoise").resizable().scaledToFit().frame(width: 30).foregroundStyle(.white)
+                                Slider(value: Binding(get: {
+                                    return 1 - (scrollTime - 1) / 29
+                                }, set: { newSize in
+                                    scrollTime = (1 - newSize) * 29 + 1
+                                    print(scrollTime)
+                                })).frame(width: 200, height: 30).rotationEffect(.init(degrees: 90)).fixedSize().frame(width: 30, height: 200)
+                                Image(systemName: "hare").resizable().scaledToFit().frame(width: 30).foregroundStyle(.white)
+                                Text(String.StringLiteralType(format: "%.1f\nsec", scrollTime)).frame(width: 40, alignment: .leading).foregroundStyle(.white)
+                            }
+                        }
+                    }
                     VStack {
                         Spacer().frame(maxHeight: .infinity)
                         Button {
@@ -118,9 +161,13 @@ struct RecordView: View, Hashable {
                                         print(player!.currentItem!.status.rawValue)
                                         print(player?.currentItem?.error)
                                     }
+                                    scrollingOffset = 0
                                     state = .showResult
                                 } else {
                                     recordingUrl = await cameraActor.startRecording()
+                                    withAnimation(.linear(duration: scrollTime)) {
+                                        scrollingOffset = textHeight
+                                    }
                                     state = .recording
                                 }
                             })
@@ -160,11 +207,39 @@ struct RecordView: View, Hashable {
                 try await cameraActor.setUpCaptureSession()
                 state = .ready
             }
-        })
-//        EmptyView().onAppear(perform: {
-//            Task {
-//                try await setUpCaptureSession()
-//            }
-//        })
+        }).background {
+            GeometryReader{ reader in
+                Color.clear.preference(key: RecordViewSize.self, value: reader.frame(in: .global).size)
+            }.onPreferenceChange(RecordViewSize.self) { size in
+                height = size.height
+                width = size.width
+            }
+        }
     }
+}
+
+
+struct RecordViewSize: PreferenceKey {
+    static var defaultValue: CGSize = CGSize()
+    
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let nextSize = nextValue()
+        value.width += nextSize.width
+        value.height += nextSize.height
+    }
+    
+    typealias Value = CGSize
+}
+
+
+struct RecordViewTextSize: PreferenceKey {
+    static var defaultValue: CGSize = CGSize()
+    
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let nextSize = nextValue()
+        value.width += nextSize.width
+        value.height += nextSize.height
+    }
+    
+    typealias Value = CGSize
 }
