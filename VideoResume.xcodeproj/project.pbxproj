@@ -79,7 +79,7 @@
 		859417802C2F8EDA001FDE32 /* RecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
 		8594178F2C330F6F001FDE32 /* CameraActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraActor.swift; sourceTree = "<group>"; };
 		859417932C34B18C001FDE32 /* ScriptGenerationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptGenerationView.swift; sourceTree = "<group>"; };
-		85DB7C5C2C2C95A10007E01A /* VideoResume.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoResume.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		85DB7C5C2C2C95A10007E01A /* Ambission.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ambission.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85DB7C5F2C2C95A10007E01A /* VideoResumeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoResumeApp.swift; sourceTree = "<group>"; };
 		85DB7C612C2C95A10007E01A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		85DB7C632C2C95A20007E01A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -147,7 +147,7 @@
 		85DB7C5D2C2C95A10007E01A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				85DB7C5C2C2C95A10007E01A /* VideoResume.app */,
+				85DB7C5C2C2C95A10007E01A /* Ambission.app */,
 				85DB7C6C2C2C95A20007E01A /* VideoResumeTests.xctest */,
 				85DB7C762C2C95A20007E01A /* VideoResumeUITests.xctest */,
 			);
@@ -220,9 +220,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		85DB7C5B2C2C95A10007E01A /* VideoResume */ = {
+		85DB7C5B2C2C95A10007E01A /* Ambission */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 85DB7C802C2C95A20007E01A /* Build configuration list for PBXNativeTarget "VideoResume" */;
+			buildConfigurationList = 85DB7C802C2C95A20007E01A /* Build configuration list for PBXNativeTarget "Ambission" */;
 			buildPhases = (
 				85DB7C582C2C95A10007E01A /* Sources */,
 				85DB7C592C2C95A10007E01A /* Frameworks */,
@@ -232,12 +232,12 @@
 			);
 			dependencies = (
 			);
-			name = VideoResume;
+			name = Ambission;
 			packageProductDependencies = (
 				8594177E2C2CA95C001FDE32 /* FirebaseFunctions */,
 			);
 			productName = VideoResume;
-			productReference = 85DB7C5C2C2C95A10007E01A /* VideoResume.app */;
+			productReference = 85DB7C5C2C2C95A10007E01A /* Ambission.app */;
 			productType = "com.apple.product-type.application";
 		};
 		85DB7C6B2C2C95A20007E01A /* VideoResumeTests */ = {
@@ -321,7 +321,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				85DB7C5B2C2C95A10007E01A /* VideoResume */,
+				85DB7C5B2C2C95A10007E01A /* Ambission */,
 				85DB7C6B2C2C95A20007E01A /* VideoResumeTests */,
 				85DB7C752C2C95A20007E01A /* VideoResumeUITests */,
 			);
@@ -422,12 +422,12 @@
 /* Begin PBXTargetDependency section */
 		85DB7C6E2C2C95A20007E01A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 85DB7C5B2C2C95A10007E01A /* VideoResume */;
+			target = 85DB7C5B2C2C95A10007E01A /* Ambission */;
 			targetProxy = 85DB7C6D2C2C95A20007E01A /* PBXContainerItemProxy */;
 		};
 		85DB7C782C2C95A20007E01A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 85DB7C5B2C2C95A10007E01A /* VideoResume */;
+			target = 85DB7C5B2C2C95A10007E01A /* Ambission */;
 			targetProxy = 85DB7C772C2C95A20007E01A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -704,7 +704,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		85DB7C802C2C95A20007E01A /* Build configuration list for PBXNativeTarget "VideoResume" */ = {
+		85DB7C802C2C95A20007E01A /* Build configuration list for PBXNativeTarget "Ambission" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				85DB7C812C2C95A20007E01A /* Debug */,
