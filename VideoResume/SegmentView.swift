@@ -278,6 +278,16 @@ struct SegmentView: View, Hashable {
                     newView
                 }.navigationDestination(for: EditClipView.self) { newView in
                     newView
+                }.toolbar {
+                    Button {
+                        let newSegmentId = UUID().uuidString
+                        segmentText[newSegmentId] = ""
+                        videoStates[newSegmentId] = []
+                        segments.append(newSegmentId)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+
                 }
             }
         }

@@ -1,0 +1,15 @@
+{
+    "applinks": {
+      "details": [
+        {
+          "appIDs": [ "LNF77PC4UL.videoresume.VideoResume" ],
+          "components": [
+            {
+              "/": "*",
+              "comment": "Matches the callback url"
+            }
+          ]
+        }
+      ]
+    }
+}

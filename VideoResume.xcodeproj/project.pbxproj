@@ -73,6 +73,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		85692BFB2C47286B0064BC35 /* Ambission-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Ambission-Info.plist"; sourceTree = "<group>"; };
+		85692BFC2C4728950064BC35 /* Ambission.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ambission.entitlements; sourceTree = "<group>"; };
 		8574113C2C3DC83F004FD8DE /* EditClipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditClipView.swift; sourceTree = "<group>"; };
 		857411522C402BAF004FD8DE /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		859417792C2CA90E001FDE32 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -135,6 +137,8 @@
 		85DB7C532C2C95A10007E01A = {
 			isa = PBXGroup;
 			children = (
+				85692BFC2C4728950064BC35 /* Ambission.entitlements */,
+				85692BFB2C47286B0064BC35 /* Ambission-Info.plist */,
 				859417792C2CA90E001FDE32 /* GoogleService-Info.plist */,
 				85DB7C5E2C2C95A10007E01A /* VideoResume */,
 				85DB7C6F2C2C95A20007E01A /* VideoResumeTests */,
@@ -557,12 +561,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Ambission.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"VideoResume/Preview Content\"";
 				DEVELOPMENT_TEAM = LNF77PC4UL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Ambission-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used to capture video resume segments";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used to capture audio for resume segments";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app needs access to your photo library to export the completed video";
@@ -589,12 +595,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Ambission.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"VideoResume/Preview Content\"";
 				DEVELOPMENT_TEAM = LNF77PC4UL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Ambission-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used to capture video resume segments";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used to capture audio for resume segments";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app needs access to your photo library to export the completed video";

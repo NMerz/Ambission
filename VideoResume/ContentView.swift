@@ -62,6 +62,19 @@ struct ContentView: View {
                         newView
                     }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                 }
+            }.navigationDestination(for: SegmentView.self) { newView in
+                newView
+            }
+        }.onOpenURL { callingUrl in
+            let queryItems = URLComponents(url: callingUrl, resolvingAgainstBaseURL: true)?.queryItems
+            if queryItems == nil {
+                return
+            }
+            for queryItem in queryItems! {
+                if queryItem.name == "script"{
+                    navPath.append(SegmentView(navPath: $navPath, segmentText: ScriptGenerationView.getScriptSegments(script: queryItem.value ?? "")))
+
+                }
             }
         }
     }
