@@ -94,7 +94,7 @@ struct RecordView: View, Hashable {
     let promptText: String
     let cameraActor = CameraActor.shared
     @State var player: AVPlayer?
-    @State var size = 12.0
+    @State var size = 32.0
     @State var width:CGFloat = 100
     @State var height: CGFloat = 200
     @State var scrollingOffset: CGFloat = 0
