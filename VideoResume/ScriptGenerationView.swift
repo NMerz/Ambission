@@ -24,13 +24,13 @@ struct ScriptGenerationView: View, Hashable {
         hasher.combine(resume)
     }
     
-    @State var tone = "fun"
+    @State var tone = "professional"
     @State var scriptProposal = ""
     @State var script = ""
     let resume: String
     @State var navPath: Binding<NavigationPath>
     
-    let potentialTones = ["fun", "professional"]
+    let potentialTones = ["fun", "professional", "technical"]
     
     init(navPath: Binding<NavigationPath>, resume: String) {
         self.navPath = navPath
