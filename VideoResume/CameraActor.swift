@@ -108,7 +108,7 @@ actor CameraActor {
         guard let connection = movieOutput.connection(with: .video) else {
             fatalError("Configuration error. No video connection found.")
         }
-        recordingUrl = URL.temporaryDirectory.appending(component: UUID().uuidString).appendingPathExtension(for: .quickTimeMovie)
+        recordingUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appending(component: UUID().uuidString).appendingPathExtension(for: .quickTimeMovie)
         print(recordingUrl!)
         delegate = MovieCaptureDelegate()
         movieOutput.startRecording(to: recordingUrl!, recordingDelegate: delegate!)

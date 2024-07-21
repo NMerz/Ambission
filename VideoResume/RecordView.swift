@@ -187,6 +187,9 @@ struct RecordView: View, Hashable {
                     Spacer().frame(width: 10)
                     Button {
                         state = .ready
+                        if movieUrl != nil {
+                            try? FileManager().removeItem(at: movieUrl!)
+                        }
                         movieUrl = nil
                     } label: {
                         Image(systemName: "x.circle").resizable().scaledToFit().contentShape(.circle)
