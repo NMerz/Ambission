@@ -53,6 +53,8 @@
 		85F7E2762C39F38A000BA7DB /* DolbyAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2752C39F38A000BA7DB /* DolbyAuthorizer.swift */; };
 		85F7E2782C39FFA2000BA7DB /* BasicAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */; };
 		85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2792C3C6F13000BA7DB /* Poll.swift */; };
+		85F82E362C4EB6D3007AE336 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F82E352C4EB6D3007AE336 /* NavigationBar.swift */; };
+		85F82E382C51653C007AE336 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 85F82E372C51653C007AE336 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +99,7 @@
 		85F7E2752C39F38A000BA7DB /* DolbyAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DolbyAuthorizer.swift; sourceTree = "<group>"; };
 		85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicAuthorizer.swift; sourceTree = "<group>"; };
 		85F7E2792C3C6F13000BA7DB /* Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poll.swift; sourceTree = "<group>"; };
+		85F82E352C4EB6D3007AE336 /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +108,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8594177F2C2CA95C001FDE32 /* FirebaseFunctions in Frameworks */,
+				85F82E382C51653C007AE336 /* FirebaseStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +176,7 @@
 				859417932C34B18C001FDE32 /* ScriptGenerationView.swift */,
 				8574113C2C3DC83F004FD8DE /* EditClipView.swift */,
 				857411522C402BAF004FD8DE /* PreviewView.swift */,
+				85F82E352C4EB6D3007AE336 /* NavigationBar.swift */,
 			);
 			path = VideoResume;
 			sourceTree = "<group>";
@@ -239,6 +244,7 @@
 			name = Ambission;
 			packageProductDependencies = (
 				8594177E2C2CA95C001FDE32 /* FirebaseFunctions */,
+				85F82E372C51653C007AE336 /* FirebaseStorage */,
 			);
 			productName = VideoResume;
 			productReference = 85DB7C5C2C2C95A10007E01A /* Ambission.app */;
@@ -377,6 +383,7 @@
 				85F7E2712C39F292000BA7DB /* Poster.swift in Sources */,
 				85F7E2762C39F38A000BA7DB /* DolbyAuthorizer.swift in Sources */,
 				85DB7C8A2C2C9B3F0007E01A /* SegmentView.swift in Sources */,
+				85F82E362C4EB6D3007AE336 /* NavigationBar.swift in Sources */,
 				8574113D2C3DC83F004FD8DE /* EditClipView.swift in Sources */,
 				85DB7C602C2C95A10007E01A /* VideoResumeApp.swift in Sources */,
 			);
@@ -767,6 +774,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 859417782C2CA256001FDE32 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFunctions;
+		};
+		85F82E372C51653C007AE336 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 859417782C2CA256001FDE32 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

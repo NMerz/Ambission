@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 struct ScriptRequest: Codable {
     let tone: String
@@ -27,16 +28,15 @@ struct ScriptGenerationView: View, Hashable {
 
     @State var tone = "professional"
     @State var scriptProposal = ""
-    let resume: String
+    @State var resume: String = ""
     @State var navPath: Binding<NavigationPath>
     
     let potentialTones = ["fun", "professional", "technical"]
     
     @State var videoModel: CreatedVideo
     
-    init(navPath: Binding<NavigationPath>, resume: String, videoModel: CreatedVideo) {
+    init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo) {
         self.navPath = navPath
-        self.resume = resume
         self.videoModel = videoModel
         if localMode {
             functions.useEmulator(withHost: "http://127.0.0.1", port: 5001)
@@ -58,6 +58,8 @@ struct ScriptGenerationView: View, Hashable {
                     HStack {
                         Spacer().frame(width: 20)
                         TextField((videoModel.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4).onAppear {
+                            let storedInputs = try! modelContext.fetch(FetchDescriptor<InputContent>()).first
+                            resume = storedInputs?.resume ?? ""
                             Task {
                                 if videoModel.unifiedScript == "" {
                                     scriptProposal = try await functions.httpsCallable("makeScript", requestAs: ScriptRequest.self, responseAs: String.self).call(ScriptRequest(tone: tone, resume: resume))
@@ -86,15 +88,15 @@ struct ScriptGenerationView: View, Hashable {
                     }
                     if videoModel.unifiedScript != "" {
                         Button(action: {
-                            videoModel.segmentTexts = ScriptGenerationView.getScriptSegments(script: videoModel.unifiedScript)
-                            for populatedSegmentKey in videoModel.segmentUrls.keys {
-                                if !videoModel.segmentTexts.keys.contains(populatedSegmentKey) {
-                                    videoModel.segmentTexts[populatedSegmentKey] = ""
-                                }
-                            }
+                            (videoModel.segments, videoModel.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel.unifiedScript)
+                            videoModel.segmentUrls = [:]
                             navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel))
                         }, label: {
-                            Text("Proceed to video studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            if videoModel.segments.isEmpty {
+                                Text("Proceed to video studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            } else {
+                                Text("Replace progress with new script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            }
                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
 //                        Button(action: {
 //                            UIPasteboard.general.string = "https://ambission.app?script=" + videoModel.script.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
@@ -104,17 +106,18 @@ struct ScriptGenerationView: View, Hashable {
                     }
                 }
             }
-        }
+        }.navigationTitle($videoModel.videoTitle).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
     }
     
-    static func getScriptSegments(script: String) -> [String: String] {
+    static func getScriptSegments(script: String) -> ([String], [String: String]) {
         let scriptSentences = script.split(separator: "\n")
-        var counter = 0
         var orderableMapping: [String: String] = [:]
+        var ordering: [String] = []
         for scriptSentence in scriptSentences {
-            counter += 1
-            orderableMapping[String(counter)] = String(scriptSentence)
+            let newId = UUID().uuidString
+            ordering.append(newId)
+            orderableMapping[newId] = String(scriptSentence)
         }
-        return orderableMapping
+        return (ordering, orderableMapping)
     }
 }

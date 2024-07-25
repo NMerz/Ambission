@@ -4,16 +4,59 @@ from firebase_admin import initialize_app
 from openai import OpenAI
 from dotenv import load_dotenv
 
+import stable_whisper
+
 from typing import Any
+import uuid
+import datetime
+from google.cloud import storage
+import google.auth as auth
+import firebase_functions.options as options
+import google.auth.transport.requests as auth_requests
 
 load_dotenv()
 
 client = OpenAI()
 
+model = stable_whisper.load_model("base")
+
+
 initialize_app()
 
 
-@https_fn.on_call()
+@https_fn.on_call(memory=options.MemoryOption.GB_2)
+def makeCaptions(req: https_fn.CallableRequest) -> Any:
+    storage_client = storage.Client()
+    print(req)
+    bucket = storage_client.bucket("video-resume-4fcd0.appspot.com")
+    blob = bucket.blob(req.data["blob"])
+    input_file = str(uuid.uuid1())
+    blob.download_to_filename(input_file)
+    new_result = model.align(input_file, req.data["text"], language="en")
+    print(new_result)
+    output_file = str(uuid.uuid1()) + ".vtt"
+    new_result.to_srt_vtt(output_file, word_level=False)
+    out_blob = bucket.blob(output_file)
+    generation_match_precondition = 0
+    out_blob.upload_from_filename(
+        output_file, if_generation_match=generation_match_precondition
+    )
+    credentials, project_id = auth.default()
+    if credentials.token is None:
+        # Perform a refresh request to populate the access token of the
+        # current credentials.
+        credentials.refresh(auth_requests.Request())
+    url = out_blob.generate_signed_url(
+        version="v4",
+        service_account_email=credentials.service_account_email,
+        access_token=credentials.token,
+        expiration=datetime.timedelta(minutes=15),
+        method="GET",
+    )
+    return url
+
+
+@https_fn.on_call(memory=options.MemoryOption.GB_2)
 def makeScript(req: https_fn.CallableRequest) -> Any:
     if req.data["tone"] == "technical":
         gpt_context = "You are conscientious and detail-oriented. Always include specific technologies. Use surprising words. You are the speaker."

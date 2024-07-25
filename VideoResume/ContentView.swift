@@ -10,6 +10,9 @@ import FirebaseFunctions
 import PDFKit
 import SwiftData
 
+var functions = Functions.functions()
+let localMode = false
+
 @Model
 class InputContent {
     var file = ""
@@ -35,10 +38,23 @@ class CreatedVideo {
         self.segmentUrls = segmentUrls
         self.segmentTexts = segmentTexts
     }
+    
+    func updateCombinedFromSegments() {
+        var newCombined = ""
+        var first = true
+        for segment in segments {
+            if first {
+                first = false
+            } else {
+                newCombined += "\n"
+            }
+            newCombined += segmentTexts[segment] ?? ""
+        }
+        unifiedScript = newCombined
+    }
 }
 
-var functions = Functions.functions()
-let localMode = false
+
 
 struct ContentView: View {
     
@@ -92,7 +108,7 @@ struct ContentView: View {
                     Button(action: {
                         let newVideo = CreatedVideo()
                         modelContext.insert(newVideo)
-                        navPath.append(ScriptGenerationView(navPath: $navPath, resume: inputContent!.resume, videoModel: newVideo))
+                        navPath.append(ScriptGenerationView(navPath: $navPath, videoModel: newVideo))
                     }, label: {
                         Text("Proceed to script studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                     }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
@@ -101,16 +117,12 @@ struct ContentView: View {
                     Text("Or, continue a past video:")
                     ForEach(pastVideos) { pastVideo in
                         Button(action: {
-                            navPath.append(ScriptGenerationView(navPath: $navPath, resume: inputContent!.resume, videoModel: pastVideo))
+                            navPath.append(SegmentView(navPath: $navPath, videoModel: pastVideo))
                         }, label: {
                             Text(pastVideo.videoTitle).font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                     }
                 }
-            }.navigationDestination(for: SegmentView.self) { newView in
-                newView
-            }.navigationDestination(for: ScriptGenerationView.self) { newView in
-                newView
             }.onAppear {
                 var storedInputs = try! modelContext.fetch(FetchDescriptor<InputContent>()).first
                 if storedInputs == nil {
@@ -118,6 +130,16 @@ struct ContentView: View {
                     modelContext.insert(storedInputs!)
                 }
                 inputContent = storedInputs
+            }.navigationDestination(for: SegmentView.self) { newView in
+                newView
+            }.navigationDestination(for: ScriptGenerationView.self) { newView in
+                newView
+            }.navigationDestination(for: RecordView.self) { newView in
+                newView
+            }.navigationDestination(for: EditClipView.self) { newView in
+                newView
+            }.navigationDestination(for: PreviewView.self) { newView in
+                newView
             }
         }.onOpenURL { callingUrl in
             let queryItems = URLComponents(url: callingUrl, resolvingAgainstBaseURL: true)?.queryItems
@@ -127,7 +149,8 @@ struct ContentView: View {
             for queryItem in queryItems! {
                 if queryItem.name == "script"{
                     let inputScript = queryItem.value ?? ""
-                    let newVideo = CreatedVideo(unifiedScript: inputScript, segmentTexts: ScriptGenerationView.getScriptSegments(script: inputScript))
+                    let (segments, texts) = ScriptGenerationView.getScriptSegments(script: inputScript)
+                    let newVideo = CreatedVideo(unifiedScript: inputScript, segments: segments, segmentTexts: texts)
                     navPath.append(SegmentView(navPath: $navPath, videoModel: newVideo))
 
                 }

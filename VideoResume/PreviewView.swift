@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import AVKit
+import PhotosUI
 
 struct PreviewView: View, Hashable {
     static func == (lhs: PreviewView, rhs: PreviewView) -> Bool {
@@ -26,9 +27,24 @@ struct PreviewView: View, Hashable {
             VideoPlayer(player: AVPlayer(url: outputUrl)).ignoresSafeArea(.all)
             VStack() {
                 Spacer().frame(maxHeight: .infinity)
-                ShareLink(item: outputUrl, label: {
-                    Image(systemName: "square.and.arrow.up").resizable()
-                }).frame(width: 30, height: 30)
+                HStack {
+                    ShareLink(item: outputUrl, label: {
+                        Image(systemName: "square.and.arrow.up").resizable().scaledToFit()
+                    }).frame(width: 30, height: 30)
+//                    Button {
+//                        PHPhotoLibrary.shared().performChanges({
+//                            let options = PHAssetResourceCreationOptions()
+//                            options.shouldMoveFile = false
+//                            let creationRequest = PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: outputUrl)
+//                        }, completionHandler: {foo, err in
+//                            print(foo)
+//                            print(err)
+//                        })
+//                    } label: {
+//                        Image(systemName: "square.and.arrow.down").resizable().scaledToFit()
+//                    }
+
+                }
                 Spacer().frame(height: 10)
             }
         }
