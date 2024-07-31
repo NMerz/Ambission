@@ -56,18 +56,24 @@ def makeCaptions(req: https_fn.CallableRequest) -> Any:
     return url
 
 
-@https_fn.on_call(memory=options.MemoryOption.GB_2)
-def makeScript(req: https_fn.CallableRequest) -> Any:
-    if req.data["tone"] == "technical":
+def getToneContext(tone: str) -> str:
+    if tone == "technical":
         gpt_context = "You are conscientious and detail-oriented. Always include specific technologies. Use surprising words. You are the speaker."
-    elif req.data["tone"] == "fun":
+    elif tone == "fun":
         gpt_context = (
             "You are a zany generalist. Always include specifics. Use surprising words."
         )
-    elif req.data["tone"] == "professional":
+    elif tone == "professional":
         gpt_context = "You are a down-to-earth generalist. Always include specifics. Use surprising words."
     else:
         return ""
+    return gpt_context
+
+
+@https_fn.on_call(memory=options.MemoryOption.GB_2)
+def makeScript(req: https_fn.CallableRequest) -> Any:
+    tone = req.data["tone"]
+    gpt_context = getToneContext(tone)
     completion = client.chat.completions.create(
         model="gpt-4-turbo",
         messages=[
@@ -83,9 +89,87 @@ def makeScript(req: https_fn.CallableRequest) -> Any:
             },
         ],
     )
+    return refineRaw(completion.choices[0].message.content, tone != "fun")
 
-    if req.data["tone"] != "fun":
-        print(completion.choices[0].message.content)
+
+import requests
+
+
+import asyncio
+from base64 import b64decode
+
+from zyte_api import AsyncZyteAPI
+import os
+
+os.environ["ZYTE_API_KEY"] = "2952f8a829e545cd9e7d8390e09ed769"
+
+
+async def scrape_this(to_scrape: str) -> bytes:
+    client = AsyncZyteAPI()
+    api_response = await client.get(
+        {
+            "url": to_scrape,
+            "screenshot": True,
+        }
+    )
+    screenshot: bytes = b64decode(api_response.json()["screenshot"])
+    return screenshot
+
+
+@https_fn.on_call(memory=options.MemoryOption.GB_2)
+def extractJobDescription(req: https_fn.CallableRequest) -> Any:
+    if req.data["uselessAuth"] != "FDKNE@!IORjr3kl23i23":
+        return None
+
+    # browser_html = asyncio.run(scrape_this(req.data["jobUrl"]))
+    # print(browser_html)
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": """Extract the job description from the html and return it as text:
+    """
+                + req.data["jobHtml"],
+            },
+        ],
+    )
+    print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
+
+
+@https_fn.on_call(memory=options.MemoryOption.GB_2)
+def makeRecruiterScript(req: https_fn.CallableRequest) -> Any:
+    tone = req.data["tone"]
+    gpt_context = getToneContext(tone)
+    completion = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": gpt_context
+                + """Your resume is:
+    """
+                + req.data["resume"],
+            },
+            {
+                "role": "user",
+                "content": """Address the listener. Not a letter. Be concise. Use <900 characters. Lead with technologies. Where does your resume overlap with this description:"
+    """
+                + req.data["jobDescription"],
+            },
+        ],
+    )
+    return refineRaw(
+        completion.choices[0].message.content,
+        False,
+    )
+
+
+def refineRaw(raw: str, summarize: bool) -> str:
+    ongoing = raw
+    if summarize:
+        print(raw)
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -95,12 +179,13 @@ def makeScript(req: https_fn.CallableRequest) -> Any:
                 },
                 {
                     "role": "user",
-                    "content": f"Condense the following: {completion.choices[0].message.content}",
+                    "content": f"Condense the following: {raw}",
                 },
             ],
         )
+        print(completion.choices[0].message.content)
+        ongoing = completion.choices[0].message.content
 
-    print(completion.choices[0].message.content)
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -110,7 +195,7 @@ def makeScript(req: https_fn.CallableRequest) -> Any:
             },
             {
                 "role": "user",
-                "content": f'rewrite using "I"/"we": {completion.choices[0].message.content}',
+                "content": f'rewrite using "I"/"we": {ongoing}',
             },
         ],
     )

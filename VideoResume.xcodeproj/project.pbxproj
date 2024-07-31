@@ -55,6 +55,8 @@
 		85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7E2792C3C6F13000BA7DB /* Poll.swift */; };
 		85F82E362C4EB6D3007AE336 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F82E352C4EB6D3007AE336 /* NavigationBar.swift */; };
 		85F82E382C51653C007AE336 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 85F82E372C51653C007AE336 /* FirebaseStorage */; };
+		85F82E3A2C57F61E007AE336 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F82E392C57F61E007AE336 /* HomeView.swift */; };
+		85F82E3C2C583D03007AE336 /* ResumeEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F82E3B2C583D03007AE336 /* ResumeEntryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +102,8 @@
 		85F7E2772C39FFA2000BA7DB /* BasicAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicAuthorizer.swift; sourceTree = "<group>"; };
 		85F7E2792C3C6F13000BA7DB /* Poll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poll.swift; sourceTree = "<group>"; };
 		85F82E352C4EB6D3007AE336 /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
+		85F82E392C57F61E007AE336 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		85F82E3B2C583D03007AE336 /* ResumeEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeEntryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,6 +181,8 @@
 				8574113C2C3DC83F004FD8DE /* EditClipView.swift */,
 				857411522C402BAF004FD8DE /* PreviewView.swift */,
 				85F82E352C4EB6D3007AE336 /* NavigationBar.swift */,
+				85F82E392C57F61E007AE336 /* HomeView.swift */,
+				85F82E3B2C583D03007AE336 /* ResumeEntryView.swift */,
 			);
 			path = VideoResume;
 			sourceTree = "<group>";
@@ -375,6 +381,7 @@
 				857411532C402BAF004FD8DE /* PreviewView.swift in Sources */,
 				85F7E2742C39F377000BA7DB /* Authorizer.swift in Sources */,
 				85DB7C622C2C95A10007E01A /* ContentView.swift in Sources */,
+				85F82E3A2C57F61E007AE336 /* HomeView.swift in Sources */,
 				859417942C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */,
 				85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */,
 				859417902C330F6F001FDE32 /* CameraActor.swift in Sources */,
@@ -385,6 +392,7 @@
 				85DB7C8A2C2C9B3F0007E01A /* SegmentView.swift in Sources */,
 				85F82E362C4EB6D3007AE336 /* NavigationBar.swift in Sources */,
 				8574113D2C3DC83F004FD8DE /* EditClipView.swift in Sources */,
+				85F82E3C2C583D03007AE336 /* ResumeEntryView.swift in Sources */,
 				85DB7C602C2C95A10007E01A /* VideoResumeApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

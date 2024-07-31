@@ -17,6 +17,16 @@ struct NavigationBar: View {
     var body: some View {
         HStack {
             Button {
+                if currentScreen != HomeView.self {
+                    navPath.wrappedValue.append(HomeView(navPath: navPath, activeVideo: currentVideo))
+                }
+            } label: {
+                VStack {
+                    Image(systemName: "house")
+                    Text("Home")
+                }
+            }.foregroundStyle(.foreground)
+            Button {
                 if currentScreen != ScriptGenerationView.self {
                     navPath.wrappedValue.append(ScriptGenerationView(navPath: navPath, videoModel: currentVideo))
                 }
@@ -34,6 +44,16 @@ struct NavigationBar: View {
                 VStack {
                     Image(systemName: "video")
                     Text("Record")
+                }
+            }.foregroundStyle(.foreground)
+            Button {
+                if currentScreen != ResumeEntryView.self {
+                    navPath.wrappedValue.append(ResumeEntryView())
+                }
+            } label: {
+                VStack {
+                    Image(systemName: "person")
+                    Text("Me")
                 }
             }.foregroundStyle(.foreground)
         }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import FirebaseFunctions
 
 class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication,
@@ -16,6 +17,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
 }
 
+var functions = Functions.functions()
+let localMode = true
 
 @main
 struct VideoResumeApp: App {
@@ -23,6 +26,7 @@ struct VideoResumeApp: App {
     
     var body: some Scene {
         WindowGroup {
+            
             ContentView().modelContainer(for: [
                 InputContent.self,
                 CreatedVideo.self
@@ -42,11 +46,12 @@ struct JumperView: View  {
     var body: some View {
 
         NavigationStack(path: $navPath) {
-            SegmentView(navPath: $navPath, videoModel: CreatedVideo(unifiedScript: "into\njob 1\njob 2\njob3\ncall to action", segments: ["1", "2", "3", "4", "5"], segmentTexts: ["1": "intro", "2": "job 1", "3": "job 2", "4": "job3", "5": "call to action"])).navigationDestination(for: SegmentView.self) { newView in
-                newView
-            }.navigationDestination(for: ScriptGenerationView.self) { newView in
-                newView
-            }
+            HomeView(navPath: $navPath)
+//            SegmentView(navPath: $navPath, videoModel: CreatedVideo(unifiedScript: "into\njob 1\njob 2\njob3\ncall to action", segments: ["1", "2", "3", "4", "5"], segmentTexts: ["1": "intro", "2": "job 1", "3": "job 2", "4": "job3", "5": "call to action"], nominalType: "general")).navigationDestination(for: SegmentView.self) { newView in
+//                newView
+//            }.navigationDestination(for: ScriptGenerationView.self) { newView in
+//                newView
+//            }
 //            EditClipView(navPath: $navPath, outputUrl: Binding(get: {
 //                return FileManager().temporaryDirectory.appending(path: "11F0F2EC-821D-4F22-9BCF-9E906B0F1141.mov")
 //            }, set: { newValue in

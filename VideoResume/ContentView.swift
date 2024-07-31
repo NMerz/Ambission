@@ -6,12 +6,9 @@
 //
 
 import SwiftUI
-import FirebaseFunctions
 import PDFKit
 import SwiftData
 
-var functions = Functions.functions()
-let localMode = false
 
 @Model
 class InputContent {
@@ -30,13 +27,17 @@ class CreatedVideo {
     var segments: [String]
     var segmentUrls: [String: URL]
     var segmentTexts: [String: String]
+    var nominalType: String  = "general"
+    var typeSpecificInput: [String: String] = [:]
     
-    init(videoTitle:String = "Untitled Video", unifiedScript: String = "", segments: [String] = [], segmentUrls: [String: URL] = [:], segmentTexts: [String: String] = [:]) {
+    
+    init(videoTitle:String = "Untitled Video", unifiedScript: String = "", segments: [String] = [], segmentUrls: [String: URL] = [:], segmentTexts: [String: String] = [:], nominalType: String) {
         self.videoTitle = videoTitle
         self.unifiedScript = unifiedScript
         self.segments = segments
         self.segmentUrls = segmentUrls
         self.segmentTexts = segmentTexts
+        self.nominalType = nominalType
     }
     
     func updateCombinedFromSegments() {
@@ -58,78 +59,28 @@ class CreatedVideo {
 
 struct ContentView: View {
     
-    @Environment(\.modelContext) var modelContext
 
+    @Query var inputContent: [InputContent]
+    @State var advance = false
+    @Environment(\.modelContext) var modelContext
     @State var navPath = NavigationPath()
-    @State var presentFileSelection = false
-    @State var manualEntry = false
-    @State var inputContent: InputContent? = nil
-    @Query let pastVideos: [CreatedVideo]
-    
+
     var body: some View {
         NavigationStack(path: $navPath) {
+            
             VStack {
-                Button(action: {
-                    presentFileSelection = true
-                }, label: {
-                    Text("Upload a pdf resume").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                }).fileImporter(isPresented: $presentFileSelection, allowedContentTypes: [.pdf]) { chosenResult in
-                    do {
-                        let chosenUrl = try chosenResult.get()
-                        if !chosenUrl.startAccessingSecurityScopedResource() {
-                            return
-                        }
-                        inputContent!.resume = PDFDocument(url: chosenUrl)!.string!
-                        chosenUrl.stopAccessingSecurityScopedResource()
-                        inputContent!.file = chosenUrl.lastPathComponent
-                    } catch {
-                        print(error)
-                        return
-                    }
-                }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                if inputContent?.file != nil && inputContent?.file != "" {
-                    Text(inputContent!.file)
-                }
-                
-                
-                Button(action: {
-                    manualEntry = true
-                }, label: {
-                    Text("Or type it in yourself").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                if manualEntry == true {
-                    TextField("Paste your resume here", text: Binding(get: {
-                        inputContent?.resume ?? ""
-                    }, set: { newValue in
-                        inputContent?.resume = newValue
-                    }),  axis: .vertical).frame(maxWidth:.infinity, maxHeight: .infinity)
-                }
-                if inputContent?.resume != nil && inputContent?.resume != "" {
-                    Button(action: {
-                        let newVideo = CreatedVideo()
-                        modelContext.insert(newVideo)
-                        navPath.append(ScriptGenerationView(navPath: $navPath, videoModel: newVideo))
-                    }, label: {
-                        Text("Proceed to script studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                    }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                }
-                if pastVideos.count > 0 {
-                    Text("Or, continue a past video:")
-                    ForEach(pastVideos) { pastVideo in
+                if advance {
+                    HomeView(navPath: $navPath)
+                } else {
+                    ResumeEntryView()
+                    if inputContent.count > 0 && inputContent.first?.resume != nil && inputContent.first?.resume != "" {
                         Button(action: {
-                            navPath.append(SegmentView(navPath: $navPath, videoModel: pastVideo))
+                            navPath.append(HomeView(navPath: $navPath))
                         }, label: {
-                            Text(pastVideo.videoTitle).font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            Text("Start creating").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                     }
                 }
-            }.onAppear {
-                var storedInputs = try! modelContext.fetch(FetchDescriptor<InputContent>()).first
-                if storedInputs == nil {
-                    storedInputs = InputContent()
-                    modelContext.insert(storedInputs!)
-                }
-                inputContent = storedInputs
             }.navigationDestination(for: SegmentView.self) { newView in
                 newView
             }.navigationDestination(for: ScriptGenerationView.self) { newView in
@@ -140,19 +91,35 @@ struct ContentView: View {
                 newView
             }.navigationDestination(for: PreviewView.self) { newView in
                 newView
+            }.navigationDestination(for: HomeView.self) { newView in
+                newView
+            }.navigationDestination(for: ResumeEntryView.self) { newView in
+                newView
+            }.onAppear {
+                if inputContent.count > 0 && inputContent.first?.resume != nil && inputContent.first?.resume != "" {
+                    advance = true
+                }
             }
-        }.onOpenURL { callingUrl in
+        }
+        .onOpenURL { callingUrl in
             let queryItems = URLComponents(url: callingUrl, resolvingAgainstBaseURL: true)?.queryItems
             if queryItems == nil {
                 return
             }
+            var scriptType = "general"
             for queryItem in queryItems! {
-                if queryItem.name == "script"{
+                if queryItem.name == "scripttype" {
+                    scriptType = queryItem.value ?? "general"
+                    
+                }
+            }
+            for queryItem in queryItems! {
+                if queryItem.name == "script" {
                     let inputScript = queryItem.value ?? ""
                     let (segments, texts) = ScriptGenerationView.getScriptSegments(script: inputScript)
-                    let newVideo = CreatedVideo(unifiedScript: inputScript, segments: segments, segmentTexts: texts)
+                    let newVideo = CreatedVideo(unifiedScript: inputScript, segments: segments, segmentTexts: texts, nominalType: scriptType)
                     navPath.append(SegmentView(navPath: $navPath, videoModel: newVideo))
-
+                    
                 }
             }
         }
