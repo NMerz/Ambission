@@ -2,3 +2,4 @@ firebase_functions~=0.1.0
 python-dotenv~=1.0.1
 openai~=1.35.5
 stable-ts~=2.17.3
+requests~=2.32.3

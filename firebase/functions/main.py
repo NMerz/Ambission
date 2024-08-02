@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 import stable_whisper
 
+import requests
+
 from typing import Any
 import uuid
 import datetime
@@ -13,6 +15,7 @@ from google.cloud import storage
 import google.auth as auth
 import firebase_functions.options as options
 import google.auth.transport.requests as auth_requests
+import google.oauth2.id_token
 
 load_dotenv()
 
@@ -72,6 +75,7 @@ def getToneContext(tone: str) -> str:
 
 @https_fn.on_call(memory=options.MemoryOption.GB_2)
 def makeScript(req: https_fn.CallableRequest) -> Any:
+    print(req)
     tone = req.data["tone"]
     gpt_context = getToneContext(tone)
     completion = client.chat.completions.create(
@@ -92,37 +96,28 @@ def makeScript(req: https_fn.CallableRequest) -> Any:
     return refineRaw(completion.choices[0].message.content, tone != "fun")
 
 
-import requests
-
-
-import asyncio
-from base64 import b64decode
-
-from zyte_api import AsyncZyteAPI
-import os
-
-os.environ["ZYTE_API_KEY"] = "2952f8a829e545cd9e7d8390e09ed769"
-
-
-async def scrape_this(to_scrape: str) -> bytes:
-    client = AsyncZyteAPI()
-    api_response = await client.get(
-        {
-            "url": to_scrape,
-            "screenshot": True,
-        }
-    )
-    screenshot: bytes = b64decode(api_response.json()["screenshot"])
-    return screenshot
-
-
 @https_fn.on_call(memory=options.MemoryOption.GB_2)
 def extractJobDescription(req: https_fn.CallableRequest) -> Any:
+    print(req)
     if req.data["uselessAuth"] != "FDKNE@!IORjr3kl23i23":
         return None
 
-    # browser_html = asyncio.run(scrape_this(req.data["jobUrl"]))
-    # print(browser_html)
+    print(req.data["jobUrl"])
+    auth_req = auth_requests.Request()
+    id_token = google.oauth2.id_token.fetch_id_token(
+        auth_req, "https://chrome-it-ocw5hqhnra-uc.a.run.app"
+    )
+    response = requests.post(
+        url="https://chrome-it-ocw5hqhnra-uc.a.run.app",
+        json={"url_to_chrome": req.data["jobUrl"]},
+        headers={"Authorization": f"Bearer {id_token}"},
+    )
+    print(response.status_code)
+    jobHtml = response.content.decode()
+    print(jobHtml)
+    if response.status_code != 200:
+        return None
+
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -130,7 +125,7 @@ def extractJobDescription(req: https_fn.CallableRequest) -> Any:
                 "role": "user",
                 "content": """Extract the job description from the html and return it as text:
     """
-                + req.data["jobHtml"],
+                + jobHtml,
             },
         ],
     )
@@ -140,6 +135,7 @@ def extractJobDescription(req: https_fn.CallableRequest) -> Any:
 
 @https_fn.on_call(memory=options.MemoryOption.GB_2)
 def makeRecruiterScript(req: https_fn.CallableRequest) -> Any:
+    print(req)
     tone = req.data["tone"]
     gpt_context = getToneContext(tone)
     completion = client.chat.completions.create(

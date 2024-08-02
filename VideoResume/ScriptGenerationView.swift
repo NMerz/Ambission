@@ -21,7 +21,7 @@ struct RecruiterScriptRequest: Codable {
 }
 
 struct ExtractJobDescriptionRequest: Codable {
-    let jobHtml: String
+    let jobUrl: String
     let uselessAuth: String
 }
 
@@ -37,7 +37,7 @@ struct ScriptGenerationView: View, Hashable {
     @Environment(\.modelContext) var modelContext
 
     @State var tone = "professional"
-    @State var scriptProposal = ""
+    @State var scriptProposal: String
     @State var navPath: Binding<NavigationPath>
     
     @State var manualEntry = false
@@ -52,6 +52,7 @@ struct ScriptGenerationView: View, Hashable {
     init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo) {
         self.navPath = navPath
         self.videoModel = videoModel
+        scriptProposal = videoModel.unifiedScript
         if localMode {
             functions.useEmulator(withHost: "http://127.0.0.1", port: 5001)
         }
@@ -84,7 +85,7 @@ struct ScriptGenerationView: View, Hashable {
             ScrollView {
                 VStack {
                     if videoModel.nominalType == "recruiter" {
-                        TextField("Job listing URL", text: Binding(get: {
+                        TextField("Enter LinkedIn job listing URL", text: Binding(get: {
                             return videoModel.typeSpecificInput["listingUrl"] ?? ""
                         }, set: { newValue in
                             if newValue == videoModel.typeSpecificInput["listingUrl"] {
@@ -103,25 +104,25 @@ struct ScriptGenerationView: View, Hashable {
                             Task {
                                 print(newValue)
                                 do {
-                                    var request = URLRequest(url: proposedUrl!)
-                                    request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
-                                    request.setValue("*/*", forHTTPHeaderField: "Accept")
-                                    request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
-                                    request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
-                                    request.setValue(" text/plain;charset=UTF-8", forHTTPHeaderField: "Content-Type")
-                                    let (data, response) = try await URLSession.shared.data(for: request)
-                                    print((response as? HTTPURLResponse)?.statusCode)
-                                    if (response as? HTTPURLResponse)?.statusCode != 200 {
-                                        errorDisplay = "Status code: " + ((response as? HTTPURLResponse)?.statusCode.description ?? "Unknown")  + ". Unable to load URL. Make sure it is valid. If the error persists, report a bug -- include the URL please."
-                                        return
-                                    }
-                                    let websiteContents = String(data: data, encoding: .utf8)
-                                    if websiteContents == nil {
-                                        errorDisplay = "Website loaded but contents could not be understood. Please report a bug and include the URL"
-                                        return
-                                    }
-                                    print(websiteContents)
-                                    videoModel.typeSpecificInput["listingText"] = try await functions.httpsCallable("extractJobDescription", requestAs: ExtractJobDescriptionRequest.self, responseAs: String.self).call(ExtractJobDescriptionRequest(jobHtml: websiteContents!, uselessAuth: "FDKNE@!IORjr3kl23i23"))
+//                                    var request = URLRequest(url: proposedUrl!)
+//                                    request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+//                                    request.setValue("*/*", forHTTPHeaderField: "Accept")
+//                                    request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+//                                    request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+//                                    request.setValue(" text/plain;charset=UTF-8", forHTTPHeaderField: "Content-Type")
+//                                    let (data, response) = try await URLSession.shared.data(for: request)
+//                                    print((response as? HTTPURLResponse)?.statusCode)
+//                                    if (response as? HTTPURLResponse)?.statusCode != 200 {
+//                                        errorDisplay = "Status code: " + ((response as? HTTPURLResponse)?.statusCode.description ?? "Unknown")  + ". Unable to load URL. Make sure it is valid. If the error persists, report a bug -- include the URL please."
+//                                        return
+//                                    }
+//                                    let websiteContents = String(data: data, encoding: .utf8)
+//                                    if websiteContents == nil {
+//                                        errorDisplay = "Website loaded but contents could not be understood. Please report a bug and include the URL"
+//                                        return
+//                                    }
+//                                    print(websiteContents)
+                                    videoModel.typeSpecificInput["listingText"] = try await functions.httpsCallable("extractJobDescription", requestAs: ExtractJobDescriptionRequest.self, responseAs: String.self).call(ExtractJobDescriptionRequest(jobUrl: newValue, uselessAuth: "FDKNE@!IORjr3kl23i23"))
                                     processingState = "Processing complete. Job description ready for use"
                                     print(videoModel.typeSpecificInput["listingText"])
                                     errorDisplay = ""
@@ -139,7 +140,7 @@ struct ScriptGenerationView: View, Hashable {
                         Button(action: {
                             manualEntry = !manualEntry
                         }, label: {
-                            Text("Or type it in yourself").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            Text("Or paste in the job description").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                         if manualEntry == true {
                             TextField("Paste the job desciption here", text: Binding(get: {
@@ -160,12 +161,10 @@ struct ScriptGenerationView: View, Hashable {
                         .clipped()
                     HStack {
                         Spacer().frame(width: 20)
-                        TextField((videoModel.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4).onAppear {
-                            Task {
-                                if videoModel.unifiedScript == "" {
-                                    try await getNewScript()
-                                }
-                            }
+                        if scriptProposal == "" {
+                            ProgressView()
+                        } else {
+                            TextField((videoModel.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
                         }
                         Button(action: {
                             Task {
@@ -176,6 +175,12 @@ struct ScriptGenerationView: View, Hashable {
                             Image(systemName: "arrow.triangle.2.circlepath")
                         })
                         Spacer().frame(width: 20)
+                    }.onAppear {
+                        Task {
+                            if videoModel.unifiedScript == "" {
+                                try await getNewScript()
+                            }
+                        }
                     }
                     Button(action: {
                         videoModel.unifiedScript = scriptProposal
@@ -194,7 +199,7 @@ struct ScriptGenerationView: View, Hashable {
                             navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel))
                         }, label: {
                             if videoModel.segments.isEmpty {
-                                Text("Proceed to video studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                                Text("Load script into Video Studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                             } else {
                                 Text("Replace progress with new script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                             }

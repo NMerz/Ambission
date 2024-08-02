@@ -18,7 +18,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 var functions = Functions.functions()
-let localMode = true
+let localMode = false
 
 @main
 struct VideoResumeApp: App {
