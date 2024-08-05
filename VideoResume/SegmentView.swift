@@ -182,40 +182,27 @@ struct SegmentView: View, Hashable {
                                     if !(videoStates[segment.wrappedValue] ?? []).contains(["background-free"]) {
                                         Button(action: {
                                             Task {
-                                                var existingStates: [String] = []
-                                                if videoStates[segment.wrappedValue] != nil {
-                                                    existingStates = videoStates[segment.wrappedValue]!
-                                                }
-                                                existingStates.append("processing")
-                                                videoStates[segment.wrappedValue] = existingStates
-                                                let inputUrl = "dlb://" + UUID().uuidString + ".mov"
-                                                print(inputUrl)
-                                                do {
-                                                    let dolbyAuthorizer = DolbyAuthorizer()
-                                                    let signedUrlDict = try await Poster.postFor([String: String].self, requestURL: URL(string: "https://api.dolby.com/media/input")!, postContent: GetSignedUrlRequest(url: inputUrl), authorizer: dolbyAuthorizer)
-                                                    print(signedUrlDict)
-                                                    try await Poster.putFile(videoModel.segmentUrls[segment.wrappedValue]!, destination: URL(string: signedUrlDict["url"]!)!)
-                                                    let outputUrl = "dlb://" + UUID().uuidString + ".mov"
-                                                    let enhanceJobDict = try await Poster.postFor([String: String].self, requestURL:  URL(string: "https://api.dolby.com/media/enhance")!, postContent: DolbyEnhanceRequest(input: inputUrl, output: outputUrl, audio: DolbyAudioChange(speech: DoblySpeechChange(isolation: DolbyIsolationChange(enable: true, amount: 100)))), authorizer: dolbyAuthorizer)
-                                                    print(enhanceJobDict)
-                                                    let pollUrl = "https://api.dolby.com/media/enhance?job_id=" + enhanceJobDict["job_id"]!
-                                                    try await Poll.monitor(URL(string: pollUrl)!, responseType: JobStatusResponse.self, authorizer: dolbyAuthorizer)
-                                                    print("ready")
-                                                    let newLocalUrl = try await Poster.downloadFile("https://api.dolby.com/media/output", params: ["url": outputUrl], authorizer: dolbyAuthorizer)
-                                                    print(newLocalUrl)
-                                                    let newPermanentDirectory = FileManager().temporaryDirectory.appending(path: UUID().uuidString + ".mov")
-                                                    try FileManager().moveItem(at: newLocalUrl, to: newPermanentDirectory)
-                                                    print(newPermanentDirectory)
-                                                    videoStates[segment.wrappedValue] = ["background-free"]
-                                                    videoModel.segmentUrls[segment.wrappedValue] = newPermanentDirectory
-                                                } catch {
-                                                    print(error)
-                                                }
+                                                await removeBackground(forSegment: segment.wrappedValue)
                                             }
                                         }, label: {
                                             Text("Remove background noise").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
                                     }
+//                                    if !(videoStates[segment.wrappedValue] ?? []).contains(["titled"]) {
+//                                        Button(action: {
+//                                            Task {
+//                                                if videoModel.segmentUrls[segment.wrappedValue] == nil {
+//                                                    return
+//                                                }
+//                                                let newPermanentDirectory = try await SegmentView.addText("foobar", addTo: videoModel.segmentUrls[segment.wrappedValue]!, position: CGPoint(x: 0, y: -800))
+//                                                print(newPermanentDirectory)
+//                                                videoStates[segment.wrappedValue] = ["titled"]
+//                                                videoModel.segmentUrls[segment.wrappedValue] = newPermanentDirectory
+//                                            }
+//                                        }, label: {
+//                                            Text("Add a foobar").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+//                                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
+//                                    }
                                 }
                                 Spacer().frame(height:20)
                             }
@@ -281,6 +268,56 @@ struct SegmentView: View, Hashable {
         return finalFile
     }
     
+    func removeBackground(forSegment: String) async {
+        var existingStates: [String] = []
+        if videoStates[forSegment] != nil {
+            existingStates = videoStates[forSegment]!
+        }
+        existingStates.append("processing")
+        videoStates[forSegment] = existingStates
+        let inputUrl = "dlb://" + UUID().uuidString + ".mov"
+        print(inputUrl)
+        do {
+            let dolbyAuthorizer = DolbyAuthorizer()
+            let signedUrlDict = try await Poster.postFor([String: String].self, requestURL: URL(string: "https://api.dolby.com/media/input")!, postContent: GetSignedUrlRequest(url: inputUrl), authorizer: dolbyAuthorizer)
+            print(signedUrlDict)
+            try await Poster.putFile(videoModel.segmentUrls[forSegment]!, destination: URL(string: signedUrlDict["url"]!)!)
+            let outputUrl = "dlb://" + UUID().uuidString + ".mov"
+            let enhanceJobDict = try await Poster.postFor([String: String].self, requestURL:  URL(string: "https://api.dolby.com/media/enhance")!, postContent: DolbyEnhanceRequest(input: inputUrl, output: outputUrl, audio: DolbyAudioChange(speech: DoblySpeechChange(isolation: DolbyIsolationChange(enable: true, amount: 100)))), authorizer: dolbyAuthorizer)
+            print(enhanceJobDict)
+            let pollUrl = "https://api.dolby.com/media/enhance?job_id=" + enhanceJobDict["job_id"]!
+            try await Poll.monitor(URL(string: pollUrl)!, responseType: JobStatusResponse.self, authorizer: dolbyAuthorizer)
+            print("ready")
+            let newLocalUrl = try await Poster.downloadFile("https://api.dolby.com/media/output", params: ["url": outputUrl], authorizer: dolbyAuthorizer)
+            print(newLocalUrl)
+            let newPermanentDirectory = FileManager().temporaryDirectory.appending(path: UUID().uuidString + ".mov")
+            try FileManager().moveItem(at: newLocalUrl, to: newPermanentDirectory)
+            print(newPermanentDirectory)
+            videoStates[forSegment] = ["background-free"]
+            videoModel.segmentUrls[forSegment] = newPermanentDirectory
+        } catch {
+            print(error)
+        }
+    }
+    
+
+    
+    static func fixPreferredTransform(_ toFix: CGAffineTransform, inputSize: CGSize, desiredSize: CGSize) -> CGAffineTransform {
+        var preferredTransform = toFix
+        print(preferredTransform)
+        print(preferredTransform.decomposed())
+        if preferredTransform.decomposed().rotation > 0 {
+            preferredTransform.tx = desiredSize.width
+        } else if preferredTransform.decomposed().rotation < 0 {
+            preferredTransform.ty = desiredSize.height
+        } else {
+            if inputSize.width != desiredSize.width || inputSize.height != desiredSize.height {
+                preferredTransform =  preferredTransform.scaledBy(x: desiredSize.width / inputSize.width, y: desiredSize.height / inputSize.height)
+            }
+        }
+        return preferredTransform
+    }
+    
     func combineVideo() async throws -> URL {
         processingFinal = true
         print("starting combination")
@@ -312,18 +349,8 @@ struct SegmentView: View, Hashable {
             let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack!)
             print("nat size")
             var preferredTransform = try await segmentVideoTrack.load(.preferredTransform)
-            print(preferredTransform)
-            print(preferredTransform.decomposed())
-            if preferredTransform.decomposed().rotation > 0 {
-                preferredTransform.tx = 1080
-            } else if preferredTransform.decomposed().rotation < 0 {
-                preferredTransform.tx = -1080
-            } else {
-                if videoTrack!.naturalSize.width < 1080.0 || videoTrack!.naturalSize.height < 1920.0 {
-                    preferredTransform =  preferredTransform.scaledBy(x: 1080.0 / videoTrack!.naturalSize.width, y: 1920.0 / videoTrack!.naturalSize.height)
-                }
-            }
-            layerInstruction.setTransform(preferredTransform, at: currentTime)
+            
+            layerInstruction.setTransform(SegmentView.fixPreferredTransform(preferredTransform, inputSize: videoTrack!.naturalSize, desiredSize: CGSize(width: 1080, height: 1920)), at: currentTime)
 
             
             currentTime = CMTimeAdd(currentTime, segmentDuration)
@@ -390,19 +417,6 @@ struct SegmentView: View, Hashable {
 
         let videoRotationComposition2 = AVMutableVideoComposition()
         let compositionInstruction2 = AVMutableVideoCompositionInstruction()
-
-                let mergedLayer = CALayer()
-                mergedLayer.frame = CGRect(origin: .zero, size: CGSize(width: 1080, height: 1920))
-        let backgroundLayer = CALayer()
-        backgroundLayer.frame = CGRect(origin: .zero, size: CGSize(width: 1080, height: 1920))
-                let subtitleLayers = CALayer()
-                let videoLayer = CALayer()
-                videoLayer.frame = CGRect(origin: .zero, size: CGSize(width: 1080, height: 1920))
-        mergedLayer.addSublayer(backgroundLayer)
-                mergedLayer.addSublayer(videoLayer)
-                mergedLayer.addSublayer(subtitleLayers)
-                subtitleLayers.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
-//        videoRotationComposition2.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: mergedLayer)
         
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionTrack)
         print("nat size")
@@ -449,71 +463,7 @@ struct SegmentView: View, Hashable {
         print(finalAsset.tracks)
         print(finalAsset.tracks.count)
         
-        
-        
-        
-//        let asset = AVURLAsset(url: exportSession.outputURL!)
-//        let composition = AVMutableComposition()
-//        let timeRange = CMTimeRange(start: .zero, duration: try await asset.load(.duration))
-//        let compositionTrack = composition.addMutableTrack(
-//            withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
-//        let assetTrack =  try await asset.loadTracks(withMediaType: .video).first
-//        try compositionTrack!.insertTimeRange(timeRange, of: assetTrack!, at: .zero)
-//        let audioAssetTrack = try await asset.loadTracks(withMediaType: .audio).first
-//        let compositionAudioTrack = composition.addMutableTrack(
-//            withMediaType: .audio,
-//            preferredTrackID: kCMPersistentTrackID_Invalid)
-//        try compositionAudioTrack!.insertTimeRange(
-//            timeRange,
-//            of: audioAssetTrack!,
-//            at: .zero)
-//        
-//        let mergedLayer = CALayer()
-//        mergedLayer.frame = CGRect(origin: .zero, size: CGSize(width: 1080, height: 1920))
-//        let subtitleLayers = CALayer()
-//        let videoLayer = CALayer()
-//        videoLayer.frame = CGRect(origin: .zero, size: CGSize(width: 1080, height: 1920))
-//        mergedLayer.addSublayer(videoLayer)
-//        mergedLayer.addSublayer(subtitleLayers)
-//        subtitleLayers.frame = CGRect(x: 0, y: 0, width: 1080, height: 1920)
-//        for segment in videoModel.segments {
-//            let captionAnimation = CABasicAnimation(keyPath: "opacity")
-//            captionAnimation.isRemovedOnCompletion = true
-//            captionAnimation.beginTime = .zero
-//            print("begin time")
-//            print(currentTime.seconds)
-//            captionAnimation.duration = durations[segment]!.seconds
-//            captionAnimation.fromValue = 1
-//            captionAnimation.toValue = 1
-//            let subtitleLayer = CATextLayer()
-//            subtitleLayer.foregroundColor = CGColor(gray: 1, alpha: 1.0)
-//            subtitleLayer.fontSize = 128
-//            subtitleLayer.frame = CGRect(x: 0, y: -1920.0 / 2, width: 1080.0, height: 1920.0)
-//            subtitleLayer.alignmentMode = .center
-//            subtitleLayer.add(captionAnimation, forKey: "opacity")
-//            subtitleLayer.string = videoModel.segmentTexts[segment] ?? ""
-//            subtitleLayer.displayIfNeeded()
-//            subtitleLayer.opacity = 0
-//            print(subtitleLayer)
-//            subtitleLayers.addSublayer(subtitleLayer)
-//        }
-//        
-//        let videoComposition = AVMutableVideoComposition()
-//        videoComposition.renderSize = CGSize(width: 1080, height: 1920)
-//        videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
-//        videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(
-//          postProcessingAsVideoLayer: videoLayer,
-//          in: mergedLayer)
-//        
-//        let instruction = AVMutableVideoCompositionInstruction()
-//        instruction.timeRange = CMTimeRange(
-//          start: .zero,
-//          duration: composition.duration)
-//        videoComposition.instructions = [instruction]
-//        let layerInstruction = compositionLayerInstruction(
-//          for: compositionTrack,
-//          assetTrack: assetTrack)
-//        instruction.layerInstructions = [layerInstruction]
+
 
         
         print("done exporting")

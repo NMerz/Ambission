@@ -27,6 +27,7 @@
 		857411502C3E0BAB004FD8DE /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 8574114F2C3E0BAB004FD8DE /* FirebaseFunctions */; };
 		857411512C3E0BD3004FD8DE /* SegmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DB7C892C2C9B3F0007E01A /* SegmentView.swift */; };
 		857411532C402BAF004FD8DE /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 857411522C402BAF004FD8DE /* PreviewView.swift */; };
+		858A04862C5D61930044DCF5 /* TightTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858A04852C5D61930044DCF5 /* TightTextField.swift */; };
 		8594177A2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
 		8594177B2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
 		8594177C2C2CA90F001FDE32 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 859417792C2CA90E001FDE32 /* GoogleService-Info.plist */; };
@@ -81,6 +82,7 @@
 		85692BFC2C4728950064BC35 /* Ambission.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ambission.entitlements; sourceTree = "<group>"; };
 		8574113C2C3DC83F004FD8DE /* EditClipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditClipView.swift; sourceTree = "<group>"; };
 		857411522C402BAF004FD8DE /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
+		858A04852C5D61930044DCF5 /* TightTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TightTextField.swift; sourceTree = "<group>"; };
 		859417792C2CA90E001FDE32 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		859417802C2F8EDA001FDE32 /* RecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
 		8594178F2C330F6F001FDE32 /* CameraActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraActor.swift; sourceTree = "<group>"; };
@@ -135,6 +137,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		858A04842C5D616F0044DCF5 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				858A04852C5D61930044DCF5 /* TightTextField.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
 		8594177D2C2CA95C001FDE32 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -169,6 +179,7 @@
 		85DB7C5E2C2C95A10007E01A /* VideoResume */ = {
 			isa = PBXGroup;
 			children = (
+				858A04842C5D616F0044DCF5 /* Utilities */,
 				85F7E26F2C39F24F000BA7DB /* REST */,
 				85DB7C5F2C2C95A10007E01A /* VideoResumeApp.swift */,
 				85DB7C612C2C95A10007E01A /* ContentView.swift */,
@@ -385,6 +396,7 @@
 				859417942C34B18C001FDE32 /* ScriptGenerationView.swift in Sources */,
 				85F7E27A2C3C6F13000BA7DB /* Poll.swift in Sources */,
 				859417902C330F6F001FDE32 /* CameraActor.swift in Sources */,
+				858A04862C5D61930044DCF5 /* TightTextField.swift in Sources */,
 				859417812C2F8EDA001FDE32 /* RecordView.swift in Sources */,
 				85F7E2782C39FFA2000BA7DB /* BasicAuthorizer.swift in Sources */,
 				85F7E2712C39F292000BA7DB /* Poster.swift in Sources */,
