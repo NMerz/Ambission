@@ -1,0 +1,76 @@
+package ambission.ambission
+
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.serialization.Serializable
+
+class SegmentsViewModel: DatabaseAccess() {
+
+}
+
+@Serializable
+class SegmentsScreenArgs(val uid: String) {
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SegmentsScreen(args: SegmentsScreenArgs, navFunction: (Any) -> Unit, modifier: Modifier = Modifier, vm: SegmentsViewModel = viewModel()) {
+
+    var segmentsState by rememberSaveable {
+        mutableStateOf(vm.getSegments(args.uid))
+    }
+
+    var segmentTextsState by rememberSaveable {
+        mutableStateOf(vm.getSegmentTexts(args.uid))
+    }
+
+    Log.d("SegmentDisplay", segmentTextsState.toString())
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar (
+                title = {
+                    Text(vm.getVideoTitle(args.uid))
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier.fillMaxSize().padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(args.uid)
+            for (segment in segmentsState) {
+                Log.d("SegmentDisplay", segment)
+                segmentTextsState[segment]?.let { Log.d("SegmentDisplay", it) }
+                Log.d("SegmentDisplay", segmentTextsState[segment] ?: "")
+                TextField(
+                    value = segmentTextsState[segment] ?: "",
+                    onValueChange = { newValue: String ->
+                        val newSegmentTexts = segmentTextsState.toMutableMap()
+                        newSegmentTexts[segment] = newValue
+                        segmentTextsState = newSegmentTexts.toMap()
+                        vm.setSegmentTexts(args.uid, segmentTextsState)
+                        //TODO: set unified, probably in vm
+                    })
+            }
+        }
+    }
+}

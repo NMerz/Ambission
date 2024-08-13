@@ -30,7 +30,7 @@ struct VideoResumeApp: App {
             ContentView().modelContainer(for: [
                 InputContent.self,
                 CreatedVideo.self
-            ])
+            ]).preferredColorScheme(.light)
 //            JumperView().modelContainer(for: [
 //                InputContent.self,
 //                CreatedVideo.self

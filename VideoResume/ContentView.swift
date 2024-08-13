@@ -55,7 +55,30 @@ class CreatedVideo {
     }
 }
 
+let AMBISSION_BACKGROUND = Color(red: 0.996078431372549, green: 0.9529411764705882, blue: 0.9176470588235294)
 
+struct NavigableText: View, Hashable {
+    static func == (lhs: NavigableText, rhs: NavigableText) -> Bool {
+        lhs.contents == rhs.contents
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(contents)
+    }
+     
+    
+    init(_ contents: String, toolbarContent: AnyView) {
+        self.contents = contents
+        self.toolbarContent = toolbarContent
+    }
+    
+    let contents: String
+    let toolbarContent: AnyView
+    
+    var body: some View {
+        Text(contents).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {toolbarContent})})
+    }
+}
 
 struct ContentView: View {
     
@@ -72,7 +95,11 @@ struct ContentView: View {
                 if advance {
                     HomeView(navPath: $navPath)
                 } else {
-                    ResumeEntryView()
+                    ResumeEntryView().toolbar(content: {
+                        if advance {
+                            ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: nil, navPath: $navPath, currentScreen: HomeView.self)})
+                        }
+                    }).toolbarBackground(AMBISSION_BACKGROUND, for: .bottomBar)
                     if inputContent.count > 0 && inputContent.first?.resume != nil && inputContent.first?.resume != "" {
                         Button(action: {
                             navPath.append(HomeView(navPath: $navPath))
@@ -95,12 +122,14 @@ struct ContentView: View {
                 newView
             }.navigationDestination(for: ResumeEntryView.self) { newView in
                 newView
+            }.navigationDestination(for: NavigableText.self) { newView in
+                newView
             }.onAppear {
                 if inputContent.count > 0 && inputContent.first?.resume != nil && inputContent.first?.resume != "" {
                     advance = true
                 }
             }
-        }
+        }.background(AMBISSION_BACKGROUND)
         .onOpenURL { callingUrl in
             let queryItems = URLComponents(url: callingUrl, resolvingAgainstBaseURL: true)?.queryItems
             if queryItems == nil {

@@ -10,7 +10,7 @@ import SwiftUI
 
 
 struct NavigationBar: View {
-    @State var currentVideo: CreatedVideo
+    @State var currentVideo: CreatedVideo?
     @State var navPath: Binding<NavigationPath>
     let currentScreen: any View.Type
     
@@ -25,7 +25,7 @@ struct NavigationBar: View {
                     Image(systemName: "house")
                     Text("Home")
                 }
-            }.foregroundStyle(.foreground)
+            }.foregroundStyle(AMBISSION_ORANGE)
             Button {
                 if currentScreen != ScriptGenerationView.self {
                     navPath.wrappedValue.append(ScriptGenerationView(navPath: navPath, videoModel: currentVideo))
@@ -35,17 +35,24 @@ struct NavigationBar: View {
                     Image(systemName: "scroll")
                     Text("Script")
                 }
-            }.foregroundStyle(.foreground)
+            }.foregroundStyle(AMBISSION_ORANGE)
             Button {
                 if currentScreen != SegmentView.self {
-                    navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: currentVideo))
+                    if currentVideo == nil {
+                        navPath.wrappedValue.append(
+                            NavigableText("Go create a new video from the Home tab!", toolbarContent:
+                                            AnyView(NavigationBar(currentVideo: nil, navPath: navPath, currentScreen: SegmentView.self)))
+                        )
+                    } else {
+                        navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: currentVideo!))
+                    }
                 }
             } label: {
                 VStack {
                     Image(systemName: "video")
                     Text("Record")
                 }
-            }.foregroundStyle(.foreground)
+            }.foregroundStyle(AMBISSION_ORANGE)
             Button {
                 if currentScreen != ResumeEntryView.self {
                     navPath.wrappedValue.append(ResumeEntryView())
@@ -55,7 +62,7 @@ struct NavigationBar: View {
                     Image(systemName: "person")
                     Text("Me")
                 }
-            }.foregroundStyle(.foreground)
-        }
+            }.foregroundStyle(AMBISSION_ORANGE)
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

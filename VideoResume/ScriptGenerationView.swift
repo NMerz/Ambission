@@ -27,12 +27,13 @@ struct ExtractJobDescriptionRequest: Codable {
 
 struct ScriptGenerationView: View, Hashable {
     static func == (lhs: ScriptGenerationView, rhs: ScriptGenerationView) -> Bool {
-        lhs.videoModel.unifiedScript == rhs.videoModel.unifiedScript && lhs.tone == rhs.tone
+        lhs.videoModel?.unifiedScript == rhs.videoModel?.unifiedScript && lhs.tone == rhs.tone
     }
     
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(videoModel.unifiedScript)
+        hasher.combine(videoModel?.unifiedScript)
+        hasher.combine(tone)
     }
     @Environment(\.modelContext) var modelContext
 
@@ -47,12 +48,12 @@ struct ScriptGenerationView: View, Hashable {
     
     @State var processingState = ""
     
-    @State var videoModel: CreatedVideo
+    @State var videoModel: CreatedVideo?
     
-    init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo) {
+    init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo?) {
         self.navPath = navPath
         self.videoModel = videoModel
-        scriptProposal = videoModel.unifiedScript
+        scriptProposal = videoModel?.unifiedScript ?? ""
         if localMode {
             functions.useEmulator(withHost: "http://127.0.0.1", port: 5001)
         }
@@ -66,17 +67,17 @@ struct ScriptGenerationView: View, Hashable {
             scriptProposal = "Please upload a resume first. You can do so under the Me tab."
             return
         }
-        if videoModel.nominalType == "recruiter" {
-            if videoModel.typeSpecificInput["listingText"] == nil || videoModel.typeSpecificInput["listingText"] == "" {
+        if videoModel?.nominalType == "recruiter" {
+            if videoModel?.typeSpecificInput["listingText"] == nil || videoModel?.typeSpecificInput["listingText"] == "" {
                 scriptProposal = "Please input the url or contents of the targeted job listing at the top of this screen and wait for it to finish processing."
                 return
             }
-            scriptProposal = try await functions.httpsCallable("makeRecruiterScript", requestAs: RecruiterScriptRequest.self, responseAs: String.self).call(RecruiterScriptRequest(tone: tone, resume: resume!, jobDescription: videoModel.typeSpecificInput["listingText"]!))
-        } else if videoModel.nominalType == "general" {
+            scriptProposal = try await functions.httpsCallable("makeRecruiterScript", requestAs: RecruiterScriptRequest.self, responseAs: String.self).call(RecruiterScriptRequest(tone: tone, resume: resume!, jobDescription: videoModel!.typeSpecificInput["listingText"]!))
+        } else if videoModel?.nominalType == "general" {
 
             scriptProposal = try await functions.httpsCallable("makeScript", requestAs: ScriptRequest.self, responseAs: String.self).call(ScriptRequest(tone: tone, resume: resume!))
         } else {
-            scriptProposal = "Sorry, an error occured. We'd appreciate a bug report so we can fix it."
+            scriptProposal = "Sorry, an error occurred. We'd appreciate a bug report so we can fix it."
         }
     }
     
@@ -84,15 +85,15 @@ struct ScriptGenerationView: View, Hashable {
         GeometryReader { reader in
             ScrollView {
                 VStack {
-                    if videoModel.nominalType == "recruiter" {
+                    if videoModel?.nominalType == "recruiter" {
                         TextField("Enter LinkedIn job listing URL", text: Binding(get: {
-                            return videoModel.typeSpecificInput["listingUrl"] ?? ""
+                            return videoModel!.typeSpecificInput["listingUrl"] ?? ""
                         }, set: { newValue in
-                            if newValue == videoModel.typeSpecificInput["listingUrl"] {
+                            if newValue == videoModel!.typeSpecificInput["listingUrl"] {
                                 return
                             }
                             errorDisplay = ""
-                            videoModel.typeSpecificInput["listingUrl"] = newValue
+                            videoModel!.typeSpecificInput["listingUrl"] = newValue
                             let proposedUrl = URL(string: newValue)
                             if proposedUrl == nil {
                                 if newValue != "" {
@@ -104,27 +105,9 @@ struct ScriptGenerationView: View, Hashable {
                             Task {
                                 print(newValue)
                                 do {
-//                                    var request = URLRequest(url: proposedUrl!)
-//                                    request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
-//                                    request.setValue("*/*", forHTTPHeaderField: "Accept")
-//                                    request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
-//                                    request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
-//                                    request.setValue(" text/plain;charset=UTF-8", forHTTPHeaderField: "Content-Type")
-//                                    let (data, response) = try await URLSession.shared.data(for: request)
-//                                    print((response as? HTTPURLResponse)?.statusCode)
-//                                    if (response as? HTTPURLResponse)?.statusCode != 200 {
-//                                        errorDisplay = "Status code: " + ((response as? HTTPURLResponse)?.statusCode.description ?? "Unknown")  + ". Unable to load URL. Make sure it is valid. If the error persists, report a bug -- include the URL please."
-//                                        return
-//                                    }
-//                                    let websiteContents = String(data: data, encoding: .utf8)
-//                                    if websiteContents == nil {
-//                                        errorDisplay = "Website loaded but contents could not be understood. Please report a bug and include the URL"
-//                                        return
-//                                    }
-//                                    print(websiteContents)
-                                    videoModel.typeSpecificInput["listingText"] = try await functions.httpsCallable("extractJobDescription", requestAs: ExtractJobDescriptionRequest.self, responseAs: String.self).call(ExtractJobDescriptionRequest(jobUrl: newValue, uselessAuth: "FDKNE@!IORjr3kl23i23"))
+                                    videoModel!.typeSpecificInput["listingText"] = try await functions.httpsCallable("extractJobDescription", requestAs: ExtractJobDescriptionRequest.self, responseAs: String.self).call(ExtractJobDescriptionRequest(jobUrl: newValue, uselessAuth: "FDKNE@!IORjr3kl23i23"))
                                     processingState = "Processing complete. Job description ready for use"
-                                    print(videoModel.typeSpecificInput["listingText"])
+                                    print(videoModel!.typeSpecificInput["listingText"] ?? "")
                                     errorDisplay = ""
                                 } catch {
                                     print(error)
@@ -144,9 +127,9 @@ struct ScriptGenerationView: View, Hashable {
                         }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                         if manualEntry == true {
                             TextField("Paste the job desciption here", text: Binding(get: {
-                                videoModel.typeSpecificInput["listingText"] ?? ""
+                                videoModel!.typeSpecificInput["listingText"] ?? ""
                             }, set: { newValue in
-                                videoModel.typeSpecificInput["listingText"] = newValue
+                                videoModel!.typeSpecificInput["listingText"] = newValue
                             }),  axis: .vertical).frame(maxWidth:.infinity, maxHeight: .infinity)
                         }
                     }
@@ -164,7 +147,7 @@ struct ScriptGenerationView: View, Hashable {
                         if scriptProposal == "" {
                             ProgressView()
                         } else {
-                            TextField((videoModel.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
+                            TextField((videoModel?.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
                         }
                         Button(action: {
                             Task {
@@ -177,28 +160,35 @@ struct ScriptGenerationView: View, Hashable {
                         Spacer().frame(width: 20)
                     }.onAppear {
                         Task {
-                            if videoModel.unifiedScript == "" {
+                            if videoModel?.unifiedScript == "" {
                                 try await getNewScript()
                             }
                         }
                     }
                     Button(action: {
-                        videoModel.unifiedScript = scriptProposal
+                        if videoModel?.unifiedScript == "" && videoModel!.segments.isEmpty {
+                            (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
+                        }
+                        videoModel?.unifiedScript = scriptProposal
                     }, label: {
                         Text("Save proposed script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                     }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
                     HStack {
                         Spacer().frame(width: 20)
-                        TextField("Final script goes here", text: $videoModel.unifiedScript,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
+                        TextField("Final script goes here", text: Binding(get: {
+                            videoModel?.unifiedScript ?? ""
+                        }, set: { newValue in
+                            videoModel?.unifiedScript = newValue
+                        }),  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
                         Spacer().frame(width: 20)
                     }
-                    if videoModel.unifiedScript != "" {
+                    if videoModel?.unifiedScript != "" {
                         Button(action: {
-                            (videoModel.segments, videoModel.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel.unifiedScript)
-                            videoModel.segmentUrls = [:]
-                            navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel))
+                            (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
+                            videoModel!.segmentUrls = [:]
+                            navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel!))
                         }, label: {
-                            if videoModel.segments.isEmpty {
+                            if videoModel != nil && videoModel!.segments.isEmpty {
                                 Text("Load script into Video Studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
                             } else {
                                 Text("Replace progress with new script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
@@ -214,7 +204,13 @@ struct ScriptGenerationView: View, Hashable {
             }.onTapGesture {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
             }
-        }.navigationTitle($videoModel.videoTitle).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
+        }.navigationTitle(Binding<String>(get: {
+            return videoModel?.videoTitle ?? ""
+        }, set: { newValue in
+            if videoModel != nil {
+                videoModel!.videoTitle = newValue
+            }
+        })).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
     }
     
     static func getScriptSegments(script: String) -> ([String], [String: String]) {

@@ -10,7 +10,7 @@ import SwiftUI
 import PDFKit
 import SwiftData
 
-
+let AMBISSION_ORANGE = Color(red: 1, green: 0.3058823529411765, blue: 0.06274509803921569)
 
 struct ResumeEntryView: View, Hashable {
     static func == (lhs: ResumeEntryView, rhs: ResumeEntryView) -> Bool {
@@ -35,7 +35,7 @@ struct ResumeEntryView: View, Hashable {
             Button(action: {
                 presentFileSelection = true
             }, label: {
-                Text("Upload a pdf resume").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                Text("Upload a pdf resume").font(.system(size: 24)).foregroundStyle(Color.white)
             }).fileImporter(isPresented: $presentFileSelection, allowedContentTypes: [.pdf]) { chosenResult in
                 do {
                     let chosenUrl = try chosenResult.get()
@@ -49,24 +49,24 @@ struct ResumeEntryView: View, Hashable {
                     print(error)
                     return
                 }
-            }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+            }.padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).foregroundStyle(AMBISSION_ORANGE))
             if inputContent?.file != nil && inputContent?.file != "" {
                 Text(inputContent!.file)
             }
             
             
-            Button(action: {
-                manualEntry = true
-            }, label: {
-                Text("Or type it in yourself").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-            }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-            if manualEntry == true {
-                TextField("Paste your resume here", text: Binding(get: {
-                    inputContent?.resume ?? ""
-                }, set: { newValue in
-                    inputContent?.resume = newValue
-                }),  axis: .vertical).frame(maxWidth:.infinity, maxHeight: .infinity)
-            }
+//            Button(action: {
+//                manualEntry = true
+//            }, label: {
+//                Text("Or type it in yourself").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+//            }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+//            if manualEntry == true {
+//                TextField("Paste your resume here", text: Binding(get: {
+//                    inputContent?.resume ?? ""
+//                }, set: { newValue in
+//                    inputContent?.resume = newValue
+//                }),  axis: .vertical).frame(maxWidth:.infinity, maxHeight: .infinity)
+//            }
         }.onAppear {
             var storedInputs = try! modelContext.fetch(FetchDescriptor<InputContent>()).first
             if storedInputs == nil {
