@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "965053369291",
+    "project_id": "video-resume-4fcd0",
+    "storage_bucket": "video-resume-4fcd0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965053369291:android:abc44cc74642fdcaf1444e",
+        "android_client_info": {
+          "package_name": "ambission.ambission"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOjj5Fzq87WLu3qGnCvn4auZAHJFGHgao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
