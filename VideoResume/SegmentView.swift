@@ -65,6 +65,8 @@ struct SegmentView: View, Hashable {
     @State var processingFinal = false
     @State var videoModel: CreatedVideo
     @State var addSubtitles: Bool = false
+    @State var offsetSegment: String? = nil
+    @State var offset = 0.0
     
     init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo) {
         self.navPath = navPath
@@ -107,138 +109,218 @@ struct SegmentView: View, Hashable {
                 ProgressView()
             } else {
                 VStack {
-                    List($videoModel.segments, id: \.self, editActions: .all) { segment in
-                        VStack {
-                            TextField("", text: Binding(get: {
-//                                print(segment.wrappedValue)
-//                                print(videoModel.segmentTexts)
-                                return videoModel.segmentTexts[segment.wrappedValue] ?? ""
-                            }, set: { newValue in
-                                videoModel.segmentTexts[segment.wrappedValue] = newValue
-                                videoModel.updateCombinedFromSegments()
-                            }), axis: .vertical)
-                            if (videoStates[segment.wrappedValue] ?? []).contains(["processing"]) {
-                                ProgressView()
-                            } else {
-                                if videoModel.segmentUrls[segment.wrappedValue] == nil {
-                                    HStack {
-                                        RoundedRectangle(cornerRadius: 5).strokeBorder(style: .init(lineWidth: 1, dash: [12, 12])).frame(height: 60).overlay {
-                                            Button("record section") {
-                                                try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
-                                                navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
-                                                    videoModel.segmentUrls[segment.wrappedValue]
-                                                }, set: { newUrl in
-                                                    videoStates[segment.wrappedValue] = ["exported"]
-                                                    videoModel.segmentUrls[segment.wrappedValue] = newUrl
-                                                    SegmentView.exportSegment(newUrl)
-                                                }), promptText: videoModel.segmentTexts[segment.wrappedValue] ?? ""))
-                                            }.buttonStyle(PlainButtonStyle())
+                    ScrollView {
+                        ForEach($videoModel.segments, id: \.self, editActions: .delete) { segment in
+                            ZStack {
+                                VStack {
+                                    HStack (alignment: .top) {
+                                        Spacer().frame(width: 10)
+                                        Group {
+                                            if videoModel.segmentUrls[segment.wrappedValue] != nil {
+                                                if (videoStates[segment.wrappedValue] ?? []).contains(["processing"]) {
+                                                    RoundedRectangle(cornerRadius: 10.0).stroke(AMBISSION_ORANGE).foregroundStyle(Color.clear).overlay {
+                                                        ProgressView()
+                                                    }.frame(width: 100, height: 100 * 16/9)
+                                                } else {
+                                                    VStack {
+                                                        VideoPlayer(player: AVPlayer(url: videoModel.segmentUrls[segment.wrappedValue]!)).frame(width: 100, height: 100 * 16/9).ignoresSafeArea(.all).id(videoModel.segmentUrls[segment.wrappedValue]).overlay {
+                                                            VStack {
+                                                                Spacer().frame(maxHeight: .infinity)
+                                                                HStack (spacing: 0) {
+                                                                    Spacer().frame(width: 5)
+                                                                    Button(action: {
+                                                                        Task {
+                                                                            navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
+                                                                                videoModel.segmentUrls[segment.wrappedValue]
+                                                                            }, set: { newUrl in
+                                                                                videoStates[segment.wrappedValue] = ["exported"]
+                                                                                videoModel.segmentUrls[segment.wrappedValue] = newUrl
+                                                                                SegmentView.exportSegment(newUrl)
+                                                                            }), promptText: videoModel.segmentTexts[segment.wrappedValue] ?? ""))
+                                                                        }
+                                                                    }, label: {
+                                                                        Image(systemName: "arrow.clockwise").resizable().scaledToFit().frame(width: 15, height: 15)
+                                                                    }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle())
+                                                                    Spacer().frame(maxWidth: .infinity)
+                                                                    Button(action: {
+                                                                        videoModel.segmentUrls.removeValue(forKey: segment.wrappedValue)
+                                                                        videoStates.removeValue(forKey: segment.wrappedValue)
+                                                                    }, label: {
+                                                                        Image(systemName: "trash").resizable().scaledToFit().frame(width: 15, height: 15)
+                                                                    }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle())
+                                                                    Spacer().frame(width: 5)
+                                                                }
+                                                                Spacer().frame(height: 5)
+                                                            }
+                                                        }
+                                                        Button(action: {
+                                                            navPath.wrappedValue.append(EditClipView(navPath: navPath, outputUrl: Binding(get: {
+                                                                videoModel.segmentUrls[segment.wrappedValue]!
+                                                            }, set: { newUrl in
+                                                                videoStates[segment.wrappedValue] = []
+                                                                videoModel.segmentUrls[segment.wrappedValue] = newUrl
+                                                            })))
+                                                        }) {
+                                                            RoundedRectangle(cornerRadius: 10.0).foregroundStyle(BUTTON_PURPLE).overlay {
+                                                                VStack {
+                                                                    Spacer().frame(height: 5)
+                                                                    Image(systemName: "scissors").resizable().rotationEffect(Angle(degrees: -90)).scaledToFit().foregroundStyle(Color.white)
+                                                                    Spacer().frame(height: 5)
+                                                                }
+                                                            }
+                                                        }.frame(width: 100, height: 33).buttonStyle(PlainButtonStyle())
+                                                    }
+                                                }
+                                            } else {
+                                                VStack {
+                                                    RoundedRectangle(cornerRadius: 10.0).stroke(AMBISSION_ORANGE).foregroundStyle(Color.clear).overlay {
+                                                        RoundedRectangle(cornerRadius: 10.0).overlay(
+                                                            Image(systemName: "video").foregroundStyle(Color.white).frame(width: 40, height: 40)
+                                                        ).foregroundStyle(AMBISSION_ORANGE).frame(width: 50, height: 50)
+                                                    }.onTapGesture {
+                                                        try! AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
+                                                        navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
+                                                            videoModel.segmentUrls[segment.wrappedValue]
+                                                        }, set: { newUrl in
+                                                            videoStates[segment.wrappedValue] = ["exported"]
+                                                            videoModel.segmentUrls[segment.wrappedValue] = newUrl
+                                                            SegmentView.exportSegment(newUrl)
+                                                        }), promptText: videoModel.segmentTexts[segment.wrappedValue] ?? ""))
+                                                    }.frame(width: 100, height: 100 * 16/9)
+                                                    AddVideoView(videoStates: $videoStates, segment: segment, videoModel: $videoModel)
+                                                }
+                                            }
+                                        }
+                                        VStack (alignment: .trailing) {
+                                            Rectangle().foregroundStyle(Color.white).overlay {
+                                                HStack {
+                                                    Spacer().frame(width: 20)
+                                                    TextField("", text: Binding(get: {
+                                                        //                                print(segment.wrappedValue)
+                                                        //                                print(videoModel.segmentTexts)
+                                                        return videoModel.segmentTexts[segment.wrappedValue] ?? ""
+                                                    }, set: { newValue in
+                                                        videoModel.segmentTexts[segment.wrappedValue] = newValue
+                                                        videoModel.updateCombinedFromSegments()
+                                                    }), axis: .vertical).font(.system(size: 14))
+                                                    Spacer().frame(width: 20)
+                                                }
+                                            }.frame(height: 100 * 16/9)
+                                            if !(videoStates[segment.wrappedValue] ?? []).contains(["background-free"]) {
+                                                RoundedRectangle(cornerRadius: 10.0).foregroundStyle(AMBISSION_ORANGE).overlay {
+                                                    Text("Remove background noise").bold().foregroundStyle(Color.white).fixedSize()
+                                                }.background(RoundedRectangle(cornerRadius: 10.0).foregroundStyle(AMBISSION_ORANGE)).frame(height: 33).onTapGesture {
+                                                    Task {
+                                                        await removeBackground(forSegment: segment.wrappedValue)
+                                                    }
+                                                }.disabled(videoModel.segmentUrls[segment.wrappedValue] == nil)
+                                            }
                                             
                                         }
-                                        AddVideoView(videoStates: $videoStates, segment: segment, videoModel: $videoModel)
-                                    }
-                                } else {
-                                    HStack {
-                                        Spacer().frame(width: 10)
-                                        Button(action: {
-                                            navPath.wrappedValue.append(EditClipView(navPath: navPath, outputUrl: Binding(get: {
-                                                videoModel.segmentUrls[segment.wrappedValue]!
-                                            }, set: { newUrl in
-                                                videoStates[segment.wrappedValue] = []
-                                                videoModel.segmentUrls[segment.wrappedValue] = newUrl
-                                            })))
-                                        }) {
-                                            Image(systemName: "scissors").resizable()
-                                        }.frame(width: 30, height: 30).buttonStyle(PlainButtonStyle())
-                                        Spacer().frame(width: 10)
-                                        VideoPlayer(player: AVPlayer(url: videoModel.segmentUrls[segment.wrappedValue]!)).frame(width: 200, height: 200 * 16/9).ignoresSafeArea(.all).id(videoModel.segmentUrls[segment.wrappedValue])
-                                        AddVideoView(videoStates: $videoStates, segment: segment, videoModel: $videoModel)
-                                        Button(action: {
-                                            navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
-                                                videoModel.segmentUrls[segment.wrappedValue]
-                                            }, set: { newUrl in
-                                                videoStates[segment.wrappedValue] = ["exported"]
-                                                videoModel.segmentUrls[segment.wrappedValue] = newUrl
-                                                SegmentView.exportSegment(newUrl)
-                                            }), promptText: videoModel.segmentTexts[segment.wrappedValue] ?? ""))
-                                        }) {
-                                            Image(systemName: "arrow.triangle.2.circlepath").resizable()
-                                        }.frame(width: 30, height: 30).buttonStyle(PlainButtonStyle())
                                         Spacer().frame(width: 10)
                                     }
-                                }
-                                //                    Text(String(describing: segmentUrls[segment]))
-                                if videoModel.segmentUrls[segment.wrappedValue] != nil {
-                                    Button(action: {
-                                        SegmentView.exportSegment(videoModel.segmentUrls[segment.wrappedValue])
-                                        videoStates[segment.wrappedValue]?.append("exported")
-                                    }, label: {
-                                        if (videoStates[segment.wrappedValue] ?? []).contains(["exported"]) {
-                                            Text("Export again").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                                        } else {
-                                            Text("Export").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                                    //                            Button(action: {
+                                    //                                navPath.wrappedValue.append(RecordView(navPath: navPath, outputUrl: Binding(get: {
+                                    //                                    videoModel.segmentUrls[segment.wrappedValue]
+                                    //                                }, set: { newUrl in
+                                    //                                    videoStates[segment.wrappedValue] = ["exported"]
+                                    //                                    videoModel.segmentUrls[segment.wrappedValue] = newUrl
+                                    //                                    SegmentView.exportSegment(newUrl)
+                                    //                                }), promptText: videoModel.segmentTexts[segment.wrappedValue] ?? ""))
+                                    //                            }) {
+                                    //                                Image(systemName: "arrow.triangle.2.circlepath").resizable()
+                                    //                            }.frame(width: 30, height: 30).buttonStyle(PlainButtonStyle())
+                                    Rectangle().frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1).foregroundStyle(AMBISSION_ORANGE)
+                                }.offset(x: (segment.wrappedValue == offsetSegment ? offset : 0))
+
+                            
+                            Button {
+                                videoModel.segments.remove(at: videoModel.segments.firstIndex(of: segment.wrappedValue)!)
+                                offset = 0
+                            } label: {
+                                Rectangle().foregroundStyle(Color.red).overlay {
+                                    Image(systemName: "trash").resizable().scaledToFit().foregroundStyle(Color.white).frame(width: 60).offset(x: -50.0)
+                                }.frame(minWidth: 200, maxWidth: 200, maxHeight: .infinity)
+                            }.offset(x: reader.size.width / 2 + 100.0 + (segment.wrappedValue == offsetSegment ? offset : 0))
+                            }.gesture(
+                                DragGesture()
+                                    .onChanged { gesture in
+                                        offsetSegment = segment.wrappedValue
+                                        offset = gesture.translation.width
+                                        if offset > 50 {
+                                            offset = .zero
+                                            offsetSegment = nil
                                         }
-                                    }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
-                                    if !(videoStates[segment.wrappedValue] ?? []).contains(["background-free"]) {
-                                        Button(action: {
-                                            Task {
-                                                await removeBackground(forSegment: segment.wrappedValue)
-                                            }
-                                        }, label: {
-                                            Text("Remove background noise").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
                                     }
-//                                    if !(videoStates[segment.wrappedValue] ?? []).contains(["titled"]) {
-//                                        Button(action: {
-//                                            Task {
-//                                                if videoModel.segmentUrls[segment.wrappedValue] == nil {
-//                                                    return
-//                                                }
-//                                                let newPermanentDirectory = try await SegmentView.addText("foobar", addTo: videoModel.segmentUrls[segment.wrappedValue]!, position: CGPoint(x: 0, y: -800))
-//                                                print(newPermanentDirectory)
-//                                                videoStates[segment.wrappedValue] = ["titled"]
-//                                                videoModel.segmentUrls[segment.wrappedValue] = newPermanentDirectory
-//                                            }
-//                                        }, label: {
-//                                            Text("Add a foobar").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-//                                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label))).buttonStyle(PlainButtonStyle())
-//                                    }
-                                }
-                                Spacer().frame(height:20)
+                                    .onEnded { _ in
+                                        if offset < -200 {
+                                            videoModel.segments.remove(at: videoModel.segments.firstIndex(of: segment.wrappedValue)!)
+                                            offset = 0
+                                            offsetSegment = nil
+                                        }
+                                        else if offset < -20 {
+                                            offset = -100
+                                        } else {
+                                            offset = 0
+                                        }
+                                    }
+                            )
+                        }
+                        HStack (alignment: .top) {
+                            Spacer().frame(width: 10)
+                            RoundedRectangle(cornerRadius: 10.0).stroke(AMBISSION_ORANGE).foregroundStyle(Color.clear).overlay {
+                                RoundedRectangle(cornerRadius: 10.0).overlay(
+                                    Image(systemName: "plus").foregroundStyle(Color.white).frame(width: 40, height: 40)
+                                ).foregroundStyle(AMBISSION_ORANGE).frame(width: 50, height: 50)
+                            }.frame(maxWidth: .infinity, minHeight: 70, maxHeight: 70).onTapGesture {
+                                let newSegmentId = (videoModel.segments.max() ?? "") + "1"
+                                videoModel.segmentTexts[newSegmentId] = ""
+                                videoStates[newSegmentId] = []
+                                videoModel.segments.append(newSegmentId)
                             }
+                            Spacer().frame(width: 10)
                         }
-                    }.listStyle(.plain).frame(height: max(200, reader.size.height - 50))
-                    if videoModel.segmentUrls.count > 0 {
-                        HStack {
-                            Text("Subtitle")
-                            Toggle("", isOn: $addSubtitles).labelsHidden()
-                            Button(action: {
-                                Task {
-                                    let outputURL = try await combineVideo()
-                                    print("got output url")
-                                    await MainActor.run {
-                                        print("add to nav path")
-                                        processingFinal = false
-                                        navPath.wrappedValue.append(PreviewView(navPath: navPath, outputUrl: outputURL))
-                                    }
+                    }.scrollDismissesKeyboard(.interactively)
+                    HStack {
+                        Spacer().frame(width: 10)
+                        Toggle("", isOn: $addSubtitles).labelsHidden().tint(BUTTON_PURPLE)
+                        Text("Subtitles").bold().foregroundStyle(BUTTON_PURPLE).fixedSize()
+                        Spacer().frame(maxWidth: .infinity)
+                        Button(action: {
+                            Task {
+                                let outputURL = try await combineVideo()
+                                print("got output url")
+                                await MainActor.run {
+                                    print("add to nav path")
+                                    processingFinal = false
+                                    navPath.wrappedValue.append(PreviewView(navPath: navPath, outputUrl: outputURL))
                                 }
-                            }, label: {
-                                Text("Combine segments").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                        }
+                            }
+                        }, label: {
+                            Text("Combine segments").font(.system(size: 24)).foregroundStyle(Color.white).fixedSize()
+                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).foregroundStyle(AMBISSION_ORANGE)).disabled(videoModel.segmentUrls.count == 0)
+                        Spacer().frame(width: 10)
                     }
-                }.navigationTitle($videoModel.videoTitle).toolbar {
-                    Button {
-                        let newSegmentId = (videoModel.segments.max() ?? "") + "1"
-                        videoModel.segmentTexts[newSegmentId] = ""
-                        videoStates[newSegmentId] = []
-                        videoModel.segments.append(newSegmentId)
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
+                    Spacer().frame(height: 5)
+                }.background(AMBISSION_BACKGROUND).navigationTitle($videoModel.videoTitle).navigationBarTitleDisplayMode(.inline)
                 .toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: SegmentView.self)})})
                 .onChange(of: videoModel.segments) {
+                    videoModel.segmentUrls = videoModel.segmentUrls.filter { (key: String, value: URL) in
+                        if !videoModel.segments.contains(where: { iter in
+                            iter == key
+                        }) {
+                            return false
+                        }
+                        return true
+                    }
+                    videoModel.segmentTexts = videoModel.segmentTexts.filter { (key: String, value: String) in
+                        if !videoModel.segments.contains(where: { iter in
+                            iter == key
+                        }) {
+                            return false
+                        }
+                        return true
+                    }
                     videoModel.updateCombinedFromSegments()
                 }
             }
@@ -553,16 +635,16 @@ struct AddVideoView: View {
     
     
     var body: some View {
-        Spacer().frame(width: 10)
         PhotosPicker(selection: Binding(get: {
             return localVideoModel.newRecipeVideo
         }, set: { newPick in
             videoStates.wrappedValue[segment.wrappedValue] = []
             localVideoModel.newRecipeVideo = newPick
         }), matching: .videos, photoLibrary: .shared()) {
-            Image(systemName: "square.and.arrow.down").resizable().scaledToFit()
-        }.frame(width: 30, height: 30)
-        Spacer().frame(width: 10)
+            RoundedRectangle(cornerRadius: 10.0).foregroundStyle(AMBISSION_ORANGE).overlay {
+                Text("Upload").bold().foregroundStyle(Color.white)
+            }
+        }.frame(width: 100, height: 33)
     }
 }
 

@@ -183,26 +183,30 @@ struct RecordView: View, Hashable {
                 }
             }
             if state == .showResult {
-                HStack{
-                    Spacer().frame(width: 10)
-                    Button {
-                        state = .ready
-                        if movieUrl != nil {
-                            try? FileManager().removeItem(at: movieUrl!)
-                        }
-                        movieUrl = nil
-                    } label: {
-                        Image(systemName: "x.circle").resizable().scaledToFit().contentShape(.circle)
-                    }.frame(width: 60, height: 60)
+                VStack {
+                    Spacer().frame(maxHeight: .infinity)
+                    HStack{
+                        Spacer().frame(width: 10)
+                        Button {
+                            state = .ready
+                            if movieUrl != nil {
+                                try? FileManager().removeItem(at: movieUrl!)
+                            }
+                            movieUrl = nil
+                        } label: {
+                            Image(systemName: "xmark.rectangle.fill").resizable().scaledToFit().foregroundStyle(Color.white, Color.red)
+                        }.frame(width: 80, height: 80)
                         
-                    Spacer().frame(maxWidth: .infinity)
-                    Button {
-                        outputUrl.wrappedValue = movieUrl
-                        navPath.wrappedValue.removeLast()
-                    } label: {
-                        Image(systemName: "checkmark.circle").resizable().scaledToFit().contentShape(.circle)
-                    }.frame(width: 60, height: 60)
-                    Spacer().frame(width: 10)
+                        Spacer().frame(maxWidth: .infinity)
+                        Button {
+                            outputUrl.wrappedValue = movieUrl
+                            navPath.wrappedValue.removeLast()
+                        } label: {
+                            Image(systemName: "checkmark.rectangle.fill").resizable().scaledToFit().foregroundStyle(Color.white, Color.green)
+                        }.frame(width: 80, height: 80)
+                        Spacer().frame(width: 10)
+                    }
+                    Spacer().frame(height: 20)
                 }
             }
         }.onAppear(perform: {
@@ -217,7 +221,7 @@ struct RecordView: View, Hashable {
                 height = size.height
                 width = size.width
             }
-        }
+        }.toolbar(.hidden, for: .navigationBar)
     }
 }
 

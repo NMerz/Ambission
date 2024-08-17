@@ -76,7 +76,7 @@ struct NavigableText: View, Hashable {
     let toolbarContent: AnyView
     
     var body: some View {
-        Text(contents).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {toolbarContent})})
+        Text(contents).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {toolbarContent})}).frame(maxWidth: .infinity, maxHeight: .infinity).background(AMBISSION_BACKGROUND)
     }
 }
 
@@ -95,7 +95,7 @@ struct ContentView: View {
                 if advance {
                     HomeView(navPath: $navPath)
                 } else {
-                    ResumeEntryView().toolbar(content: {
+                    ResumeEntryView(referrerCreatedVideo: nil, navPath: $navPath).toolbar(content: {
                         if advance {
                             ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: nil, navPath: $navPath, currentScreen: HomeView.self)})
                         }
@@ -129,7 +129,7 @@ struct ContentView: View {
                     advance = true
                 }
             }
-        }.background(AMBISSION_BACKGROUND)
+        }.tint(AMBISSION_ORANGE).background(AMBISSION_BACKGROUND)
         .onOpenURL { callingUrl in
             let queryItems = URLComponents(url: callingUrl, resolvingAgainstBaseURL: true)?.queryItems
             if queryItems == nil {

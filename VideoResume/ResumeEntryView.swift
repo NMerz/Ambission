@@ -28,6 +28,8 @@ struct ResumeEntryView: View, Hashable {
     @State var manualEntry = false
     @State var inputContent: InputContent? = nil
     @State var advance = false
+    @State var referrerCreatedVideo: CreatedVideo?
+    @State var navPath: Binding<NavigationPath>
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
@@ -67,14 +69,14 @@ struct ResumeEntryView: View, Hashable {
 //                    inputContent?.resume = newValue
 //                }),  axis: .vertical).frame(maxWidth:.infinity, maxHeight: .infinity)
 //            }
-        }.onAppear {
+        }.frame(maxWidth: .infinity, maxHeight: .infinity).background(AMBISSION_BACKGROUND).onAppear {
             var storedInputs = try! modelContext.fetch(FetchDescriptor<InputContent>()).first
             if storedInputs == nil {
                 storedInputs = InputContent()
                 modelContext.insert(storedInputs!)
             }
             inputContent = storedInputs
-        }
+        }.toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: referrerCreatedVideo, navPath: navPath, currentScreen: ResumeEntryView.self)})})
     }
     
 }

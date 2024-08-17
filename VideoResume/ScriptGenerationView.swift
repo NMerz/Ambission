@@ -49,6 +49,8 @@ struct ScriptGenerationView: View, Hashable {
     @State var processingState = ""
     
     @State var videoModel: CreatedVideo?
+    @FocusState var scriptFocused: Bool
+
     
     init(navPath: Binding<NavigationPath>, videoModel: CreatedVideo?) {
         self.navPath = navPath
@@ -83,7 +85,6 @@ struct ScriptGenerationView: View, Hashable {
     
     var body: some View {
         GeometryReader { reader in
-            ScrollView {
                 VStack {
                     if videoModel?.nominalType == "recruiter" {
                         TextField("Enter LinkedIn job listing URL", text: Binding(get: {
@@ -134,83 +135,82 @@ struct ScriptGenerationView: View, Hashable {
                         }
                     }
                     
-                    Picker(selection: $tone, label: Text("Data")) {
+                    HStack {
                         ForEach(potentialTones, id: \.self) { iterTone in
-                            Text(iterTone)
+                            Group {
+                                Button(action: {
+                                    tone = iterTone
+                                    scriptFocused = false
+                                }, label: {
+                                    Text(iterTone).foregroundStyle(iterTone == tone ? .white : BUTTON_PURPLE).frame(maxWidth: .infinity).font(.system(size: 12.0))
+                                }).buttonStyle(BorderedProminentButtonStyle()).tint(iterTone == tone ? BUTTON_PURPLE : .white)
+                            }
                         }
-                    }.pickerStyle(.segmented)
-                        .labelsHidden()
-                        .frame(maxHeight: 100)
-                        .clipped()
+                    }
                     HStack {
                         Spacer().frame(width: 20)
-                        if scriptProposal == "" {
-                            ProgressView()
-                        } else {
-                            TextField((videoModel?.unifiedScript == "" ? "Generating... This may take up to 30 seconds" : "Use refresh to generate a new script"), text: $scriptProposal,  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
-                        }
-                        Button(action: {
-                            Task {
-                                scriptProposal = ""
-                                try await getNewScript()
+                        let loadingScript = scriptProposal == "" && !scriptFocused
+                        TextEditor(text: $scriptProposal).frame(maxWidth:.infinity,  maxHeight: .infinity).focused($scriptFocused).onTapGesture {
+                            scriptFocused = true
+                        }.disabled(loadingScript).overlay {
+                            if loadingScript {
+                                VStack {
+                                    Image("ambission pyramid")
+                                    Text("Generating your script...").foregroundStyle(AMBISSION_ORANGE)
+                                }
                             }
-                        }, label: {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                        })
-                        Spacer().frame(width: 20)
+                        }
+                        
                     }.onAppear {
                         Task {
                             if videoModel?.unifiedScript == "" {
                                 try await getNewScript()
+                            } else if videoModel == nil {
+                                scriptProposal = "Please create a new video from the Home tab"
                             }
                         }
                     }
-                    Button(action: {
-                        if videoModel?.unifiedScript == "" && videoModel!.segments.isEmpty {
-                            (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
+                    if !scriptFocused {
+                        Spacer().frame(height: 20)
+                        HStack {
+                            Button(action: {
+                                Task {
+                                    scriptProposal = ""
+                                    try await getNewScript()
+                                }
+                            }, label: {
+                                Image(systemName: "arrow.clockwise")
+                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle()).frame(width: 50, height: 50)
+                            Button(action: {
+                                videoModel?.unifiedScript = scriptProposal
+                                (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
+                                videoModel!.segmentUrls = [:]
+                                navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel!))
+                            }, label: {
+                                Text("Save proposed script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
+                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle()).frame(height: 50)
                         }
-                        videoModel?.unifiedScript = scriptProposal
-                    }, label: {
-                        Text("Save proposed script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                    }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                    HStack {
-                        Spacer().frame(width: 20)
-                        TextField("Final script goes here", text: Binding(get: {
-                            videoModel?.unifiedScript ?? ""
-                        }, set: { newValue in
-                            videoModel?.unifiedScript = newValue
-                        }),  axis: .vertical).frame(maxWidth:.infinity, minHeight: reader.size.height * 0.3, maxHeight: reader.size.height * 0.4)
-                        Spacer().frame(width: 20)
+                        Spacer().frame(height: 20)
                     }
-                    if videoModel?.unifiedScript != "" {
-                        Button(action: {
-                            (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
-                            videoModel!.segmentUrls = [:]
-                            navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel!))
-                        }, label: {
-                            if videoModel != nil && videoModel!.segments.isEmpty {
-                                Text("Load script into Video Studio").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            } else {
-                                Text("Replace progress with new script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            }
-                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
+                    
 //                        Button(action: {
 //                            UIPasteboard.general.string = "https://ambission.app?script=" + videoModel.script.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
 //                        }, label: {
 //                            Text("Copy a shareable link").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
 //                        }).padding(.all, 5).background(RoundedRectangle(cornerRadius: 10.0).stroke(Color(uiColor: .label)))
-                    }
-                }
-            }.onTapGesture {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
-            }
+                }.onTapGesture {
+                    scriptFocused = false
+                }.safeAreaPadding()
+            
         }.navigationTitle(Binding<String>(get: {
             return videoModel?.videoTitle ?? ""
         }, set: { newValue in
             if videoModel != nil {
                 videoModel!.videoTitle = newValue
             }
-        })).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
+        })).background(AMBISSION_BACKGROUND.onTapGesture {
+            scriptFocused = false
+        }).navigationBarTitleDisplayMode(.inline).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
     }
     
     static func getScriptSegments(script: String) -> ([String], [String: String]) {
@@ -224,4 +224,25 @@ struct ScriptGenerationView: View, Hashable {
         }
         return (ordering, orderableMapping)
     }
+}
+
+
+extension UINavigationController {
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let appearance = UINavigationBarAppearance()
+        
+        appearance.backgroundColor = UIColor(AMBISSION_BACKGROUND)
+        appearance.titleTextAttributes = [.foregroundColor: UIColor(AMBISSION_ORANGE)]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(AMBISSION_ORANGE)]
+        
+        appearance.shadowColor = UIColor(AMBISSION_ORANGE)
+        
+        navigationBar.standardAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+         
+    }
+    
 }
