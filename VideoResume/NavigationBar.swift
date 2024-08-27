@@ -25,7 +25,7 @@ struct NavigationBar: View {
                     VStack(spacing: 0) {
                         Rectangle().frame(width: 30, height: 3).foregroundStyle(currentScreen == HomeView.self ? AMBISSION_ORANGE : .clear)
                         Spacer().frame(minHeight: 2, maxHeight: .infinity) // There was a persistent 2 pixels of padding at the top and I couldn't find where it was coming from. This eliminates it for some reason.
-                        Image(systemName: "house").resizable().scaledToFit().frame(width: 30, height: 30)
+                        Image(systemName: "house").resizable().scaledToFit().frame(width: 30, height: 25)
                         Spacer().frame(height: 5)
                         Text("Home").font(.system(size: 12))
                     }.frame(maxHeight: .infinity)
@@ -40,7 +40,7 @@ struct NavigationBar: View {
                     VStack(spacing: 0) {
                         Rectangle().frame(width: 30, height: 3).foregroundStyle(currentScreen == ScriptGenerationView.self ? AMBISSION_ORANGE : .clear)
                         Spacer().frame(minHeight: 2, maxHeight: .infinity)
-                        Image(systemName: "scroll").resizable().scaledToFit().frame(width: 30, height: 30)
+                        Image(systemName: "scroll").resizable().scaledToFit().frame(width: 30, height: 25)
                         Spacer().frame(height: 5)
                         Text("Script").font(.system(size: 12))
                     }.frame(maxHeight: .infinity)
@@ -62,7 +62,7 @@ struct NavigationBar: View {
                     VStack(spacing: 0) {
                         Rectangle().frame(width: 30, height: 3).foregroundStyle(currentScreen == SegmentView.self ? AMBISSION_ORANGE : .clear)
                         Spacer().frame(minHeight: 2, maxHeight: .infinity)
-                        Image(systemName: "video").resizable().scaledToFit().frame(width: 30, height: 30)
+                        Image(systemName: "video").resizable().scaledToFit().frame(width: 30, height: 25)
                         Spacer().frame(height: 5)
                         Text("Record").font(.system(size: 12))
                     }.frame(maxHeight: .infinity)
@@ -77,7 +77,7 @@ struct NavigationBar: View {
                     VStack(spacing: 0) {
                         Rectangle().frame(width: 30, height: 3).foregroundStyle(currentScreen == ResumeEntryView.self ? AMBISSION_ORANGE : .clear)
                         Spacer().frame(minHeight: 2, maxHeight: .infinity)
-                        Image(systemName: "person").resizable().scaledToFit().frame(width: 30, height: 30)
+                        Image(systemName: "person").resizable().scaledToFit().frame(width: 30, height: 25)
                         Spacer().frame(height: 5)
                         Text("Me").font(.system(size: 12))
                     }.frame(maxHeight: .infinity)

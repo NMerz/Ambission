@@ -39,33 +39,27 @@ struct HomeView: View, Hashable {
     
     var body: some View {
         VStack (alignment: .leading) {
-            Text("New Project").foregroundStyle(AMBISSION_ORANGE)
-            HStack {
+            Text("New Project").bold().foregroundStyle(AMBISSION_ORANGE)
+            HStack (spacing: 0) {
                 VStack {
                     Button(action: {
                         OpenScriptWindow(nominalType: "general")
                     }, label: {
                         Image(systemName: "hand.wave").resizable().scaledToFit().foregroundStyle(Color(uiColor: .white))
-                    }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity)
-                    Text("General Intro").font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
+                    }).padding(.all, 20).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    Text("General Intro").bold().font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
                 }
                 VStack {
                     Button(action: {
                         OpenScriptWindow(nominalType: "recruiter")
                     }, label: {
                         Image(systemName: "person.badge.plus").resizable().scaledToFit().foregroundStyle(Color(uiColor: .white))
-                    }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity)
-                    Text("Recruiter Intro").font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
+                    }).padding(.all, 20).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    Text("Recruiter Intro").bold().font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
                 }
-                Button(action: {
-                }, label: {
-                }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(Color.clear)).buttonStyle(PlainButtonStyle()).foregroundStyle(Color.clear).frame(maxWidth: .infinity)
-                Button(action: {
-                }, label: {
-                }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(Color.clear)).buttonStyle(PlainButtonStyle()).foregroundStyle(Color.clear).frame(maxWidth: .infinity)
             }
             if pastVideos.count > 0 {
-                Text("Saved Projects").foregroundStyle(AMBISSION_ORANGE)
+                Text("Saved Projects").bold().foregroundStyle(AMBISSION_ORANGE)
                 ScrollView {
                     ForEach(pastVideos) { pastVideo in
                         HStack {
@@ -129,12 +123,12 @@ struct HomeView: View, Hashable {
                                     })
                                     Button("Cancel", role: .cancel, action: {})
                                 }
-                            }.frame(maxHeight: .infinity).presentationDetents([.medium]).background(AMBISSION_BACKGROUND).background(ignoresSafeAreaEdges: .all)
+                            }.frame(maxHeight: .infinity).presentationDetents([.medium])
                         }
                     }
                 }
             }
-        }
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar(content: {
             ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: activeVideo, navPath: navPath, currentScreen: HomeView.self)})
         }).background(AMBISSION_BACKGROUND).toolbarBackground(AMBISSION_BACKGROUND, for: .bottomBar).toolbarBackground(.visible, for: .bottomBar)

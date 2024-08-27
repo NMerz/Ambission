@@ -138,17 +138,16 @@ struct ScriptGenerationView: View, Hashable {
                     HStack {
                         ForEach(potentialTones, id: \.self) { iterTone in
                             Group {
-                                Button(action: {
+                                Text(iterTone.capitalized).foregroundStyle(iterTone == tone ? .white : BUTTON_PURPLE).frame(maxWidth: .infinity).font(.system(size: 12.0)).onTapGesture {
                                     tone = iterTone
                                     scriptFocused = false
-                                }, label: {
-                                    Text(iterTone).foregroundStyle(iterTone == tone ? .white : BUTTON_PURPLE).frame(maxWidth: .infinity).font(.system(size: 12.0))
-                                }).buttonStyle(BorderedProminentButtonStyle()).tint(iterTone == tone ? BUTTON_PURPLE : .white)
+                                }.background {
+                                    RoundedRectangle(cornerRadius: 20.0).foregroundStyle(iterTone == tone ? BUTTON_PURPLE : .white).frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
+                                }.frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30)
                             }
                         }
                     }
                     HStack {
-                        Spacer().frame(width: 20)
                         let loadingScript = scriptProposal == "" && !scriptFocused
                         TextEditor(text: $scriptProposal).frame(maxWidth:.infinity,  maxHeight: .infinity).focused($scriptFocused).onTapGesture {
                             scriptFocused = true
@@ -179,16 +178,16 @@ struct ScriptGenerationView: View, Hashable {
                                     try await getNewScript()
                                 }
                             }, label: {
-                                Image(systemName: "arrow.clockwise")
-                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle()).frame(width: 50, height: 50)
+                                Image(systemName: "arrow.clockwise").resizable().scaledToFit().frame(width: 45, height: 45)
+                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle())
                             Button(action: {
                                 videoModel?.unifiedScript = scriptProposal
                                 (videoModel!.segments, videoModel!.segmentTexts) = ScriptGenerationView.getScriptSegments(script: videoModel!.unifiedScript)
                                 videoModel!.segmentUrls = [:]
                                 navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: videoModel!))
                             }, label: {
-                                Text("Save proposed script").font(.system(size: 24)).foregroundStyle(Color(uiColor: .label))
-                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle()).frame(height: 50)
+                                Text("Save proposed script").bold().font(.system(size: 15)).foregroundStyle(Color(uiColor: .label)).fixedSize().frame(height: 45)
+                            }).tint(AMBISSION_ORANGE).buttonStyle(BorderedProminentButtonStyle())
                         }
                         Spacer().frame(height: 20)
                     }
@@ -210,7 +209,10 @@ struct ScriptGenerationView: View, Hashable {
             }
         })).background(AMBISSION_BACKGROUND.onTapGesture {
             scriptFocused = false
-        }).navigationBarTitleDisplayMode(.inline).toolbar(content: {ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})})
+        }).navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: {
+                ToolbarItem(placement: .bottomBar, content: {NavigationBar(currentVideo: videoModel, navPath: navPath, currentScreen: ScriptGenerationView.self)})
+            }).background(AMBISSION_BACKGROUND).toolbarBackground(AMBISSION_BACKGROUND, for: .bottomBar).toolbarBackground(.visible, for: .bottomBar)
     }
     
     static func getScriptSegments(script: String) -> ([String], [String: String]) {
