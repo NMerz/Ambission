@@ -39,27 +39,41 @@ struct HomeView: View, Hashable {
     
     var body: some View {
         VStack (alignment: .leading) {
-            Text("New Project").bold().foregroundStyle(AMBISSION_ORANGE)
             HStack (spacing: 0) {
-                VStack {
+                Spacer().frame(width: 20)
+                Text("New Project").bold().foregroundStyle(AMBISSION_ORANGE)
+            }
+            HStack (spacing: 0) {
+                Spacer().frame(width:20)
+                VStack (spacing:0) {
+                    Spacer().frame(height:20)
                     Button(action: {
                         OpenScriptWindow(nominalType: "general")
                     }, label: {
                         Image(systemName: "hand.wave").resizable().scaledToFit().foregroundStyle(Color(uiColor: .white))
-                    }).padding(.all, 20).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    Spacer().frame(height:20)
                     Text("General Intro").bold().font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
                 }
-                VStack {
+                Spacer().frame(width:20)
+                Spacer().frame(width:20)
+                VStack (spacing:0) {
+                    Spacer().frame(height:20)
                     Button(action: {
                         OpenScriptWindow(nominalType: "recruiter")
                     }, label: {
                         Image(systemName: "person.badge.plus").resizable().scaledToFit().foregroundStyle(Color(uiColor: .white))
-                    }).padding(.all, 20).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    }).padding(.all, 10).background(RoundedRectangle(cornerRadius: 10.0).fill(BUTTON_PURPLE)).buttonStyle(PlainButtonStyle()).frame(maxWidth: .infinity).frame(width: 68, height: 68)
+                    Spacer().frame(height:20)
                     Text("Recruiter Intro").bold().font(.system(size: 12)).foregroundStyle(BUTTON_PURPLE)
                 }
+                Spacer().frame(width:20)
             }
             if pastVideos.count > 0 {
-                Text("Saved Projects").bold().foregroundStyle(AMBISSION_ORANGE)
+                HStack (spacing: 0) {
+                    Spacer().frame(width: 20)
+                    Text("Saved Projects").bold().foregroundStyle(AMBISSION_ORANGE)
+                }
                 ScrollView {
                     ForEach(pastVideos) { pastVideo in
                         HStack {
@@ -76,7 +90,7 @@ struct HomeView: View, Hashable {
                                         ).foregroundStyle(AMBISSION_ORANGE).frame(width: 50, height: 50)
                                     }
                                 }
-                            }.frame(width: 200, height: 200 * 16/9).onTapGesture {
+                            }.frame(width: 100, height: 100 * 16/9).onTapGesture {
                                 activeVideo = pastVideo
                                 navPath.wrappedValue.append(SegmentView(navPath: navPath, videoModel: pastVideo))
                             }
