@@ -23,11 +23,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.google.firebase.functions.FirebaseFunctions
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PDFBoxResourceLoader.init(applicationContext);
         AppDatabase.getSharedDatabase(application)
         enableEdgeToEdge()
         setContent {

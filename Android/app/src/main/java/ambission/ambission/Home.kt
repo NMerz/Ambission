@@ -18,10 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
 import java.util.UUID
 
 
@@ -31,51 +34,56 @@ class Home: ViewModel() {
     private val allVideos = dbdao.getAll().asLiveData()
 
     init {
-        //TODO: make a thing to actuall set this
-        inputsdao.setInput(Inputs("resume", """"Work Experience:	
-"Software Engineer, Verily Life Sciences
-Architected and implemented lifting of medical image processing service to Google Cloud Platform
-Performed upgrade and state migration of production Terraform resources to allow for greater configuration flexibility and increased security
-Architected, built, and refined Google Cloud-based data filtering service using Airflow, Cloud Runs, Dataflow, and Go
-Maintained complex data pipeline with oncall support, data changes, and usability improvements
-Received 10 peer-awarded bonuses for outstanding work and “significantly above expectations” ratings at every performance evaluation"	"June 2022
--
-March 2024"
-"Software Engineer Program Intern, J. P. Morgan Chase
-Automated setup of new data pipelines using REST APIs to decrease onboarding time for new pipelines
-Developed data processing Maven archetypes to decrease knowledge burden of custom tooling"	"June 2021
--
-August 2021"
-"Software Engineer, Milliman - PRM Analytics
-Added and maintained models for predicting patient cost using LightGBM, Pandas, and Pyspark
-Maintained and modernized data pipeline to deliver more reliable and secure data processing
-Contributed to production troubleshooting and quality verification"	"May 2020
--
-April 2021"
-"Intern (Software), CME Group
-Automated transfer of database policy management using Apache Ranger’s REST API
-Adapted database schema management software for the Apache Hive database driver"	"May 2019
--
-August 2019
-"
-"
-Education:"	
-"Purdue University - West Lafayette
-Master of Science and Bachelor of Science in Computer Science
-
-Software Lead & Treasurer, Lunabotics Robotics Team
-Led software development including defining architecture, mentoring younger team members, and leading inter-team communication
-Developed code and tests for robotic autonomy, computer vision,  communication, and motor control"	"August 2018
--
-May 2022
-
-May 2019
--
-May 2020"""))
+//        inputsdao.setInput(Inputs("resume", ""))
+//        //TODO: make a thing to actuall set this
+//        inputsdao.setInput(Inputs("resume", """"Work Experience:
+//"Software Engineer, Verily Life Sciences
+//Architected and implemented lifting of medical image processing service to Google Cloud Platform
+//Performed upgrade and state migration of production Terraform resources to allow for greater configuration flexibility and increased security
+//Architected, built, and refined Google Cloud-based data filtering service using Airflow, Cloud Runs, Dataflow, and Go
+//Maintained complex data pipeline with oncall support, data changes, and usability improvements
+//Received 10 peer-awarded bonuses for outstanding work and “significantly above expectations” ratings at every performance evaluation"	"June 2022
+//-
+//March 2024"
+//"Software Engineer Program Intern, J. P. Morgan Chase
+//Automated setup of new data pipelines using REST APIs to decrease onboarding time for new pipelines
+//Developed data processing Maven archetypes to decrease knowledge burden of custom tooling"	"June 2021
+//-
+//August 2021"
+//"Software Engineer, Milliman - PRM Analytics
+//Added and maintained models for predicting patient cost using LightGBM, Pandas, and Pyspark
+//Maintained and modernized data pipeline to deliver more reliable and secure data processing
+//Contributed to production troubleshooting and quality verification"	"May 2020
+//-
+//April 2021"
+//"Intern (Software), CME Group
+//Automated transfer of database policy management using Apache Ranger’s REST API
+//Adapted database schema management software for the Apache Hive database driver"	"May 2019
+//-
+//August 2019
+//"
+//"
+//Education:"
+//"Purdue University - West Lafayette
+//Master of Science and Bachelor of Science in Computer Science
+//
+//Software Lead & Treasurer, Lunabotics Robotics Team
+//Led software development including defining architecture, mentoring younger team members, and leading inter-team communication
+//Developed code and tests for robotic autonomy, computer vision,  communication, and motor control"	"August 2018
+//-
+//May 2022
+//
+//May 2019
+//-
+//May 2020"""))
     }
 
     fun getResume(): LiveData<String> {
         return inputsdao.getResume().asLiveData()
+    }
+
+    fun setResume(newResume: String) {
+        inputsdao.setInput(Inputs("resume", newResume))
     }
 
     fun getAllVideos(): LiveData<List<CreatedVideo>> {
@@ -97,21 +105,36 @@ fun HomeScreen(name: String, navFunction: (Any) -> Unit, modifier: Modifier = Mo
     val resume = vm.getResume().observeAsState()
 
 
-
+    val localContext = LocalContext.current
     if ((resume.value ?: "")  == "") {
         val openResume = rememberLauncherForActivityResult(
             contract =
             ActivityResultContracts.OpenDocument()
         ) { uri: Uri? ->
-            Log.d("MainActivity", "uri: $uri")
+//            val inputFile = uri.toString()
+//            if (uri != null) {
+//
+//            }
+//            Log.d("MainActivity", "uri: $inputFile")
+//            Log.d("MainActivity", FileInputStream(inputFile).toString())
+//            Log.d("MainActivity", inputStream.readAllBytes().toString())
+            val newResume = PDDocument.load(uri?.let {
+                localContext.contentResolver.openInputStream(
+                    it
+                )
+            })
+            val pdfStripper = PDFTextStripper()
+            val newResumeContents = "Parsed text: " + pdfStripper.getText(newResume)
+            Log.d("MainActivity", "contents: $newResumeContents")
+            vm.setResume(newResumeContents)
+            newResume.close()
         }
 
 
-        Text("Add your resume")
         Button(onClick = { //TODO: finish adding pdf; I was in the middle of this. Code here is untested. PDF to be read by pdfbox - see gradle
             openResume.launch(arrayOf("application/pdf"))
         }) {
-
+            Text("Add your resume")
         }
 
     } else {
