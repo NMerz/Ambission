@@ -48,19 +48,17 @@ fun AppRoot() {
     val navController = rememberNavController()
 
     AmbissionTheme {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Greetable(name = "enter here", 123),
-                modifier = Modifier.padding(innerPadding)
+                startDestination = Greetable(name = "enter here", 123)
             ) {
                 composable<Greetable> {backStackEntry ->
                     val greetable: Greetable = backStackEntry.toRoute()
-                    Greeting(greetable.name, num = greetable.num, navFunction = navController::navigateSingleTopTo, modifier = Modifier.padding(innerPadding))
+                    Greeting(greetable.name, num = greetable.num, navFunction = navController::navigateSingleTopTo)
                 }
                 composable<Homeable> {backStackEntry ->
                     val homeable: Homeable = backStackEntry.toRoute()
-                    HomeScreen(homeable.name, navFunction = navController::navigateSingleTopTo, modifier = Modifier.padding(innerPadding))
+                    HomeScreen(homeable.name, navFunction = navController::navigateSingleTopTo)
                 }
                 composable<ScriptGenerationScreenArgs> {navBackStackEntry ->
                     val scriptGenerationArgs: ScriptGenerationScreenArgs = navBackStackEntry.toRoute()
@@ -70,8 +68,11 @@ fun AppRoot() {
                     val segmentsScreenArgs: SegmentsScreenArgs = navBackStackEntry.toRoute()
                     SegmentsScreen(segmentsScreenArgs, navFunction = navController::navigateSingleTopTo)
                 }
+                composable<RecordScreenArgs> {navBackStackEntry ->
+                    val recordScreenArgs: RecordScreenArgs = navBackStackEntry.toRoute()
+                    RecordScreen(recordScreenArgs, navFunction = navController::navigateSingleTopTo, returnFunction = navController::popBackStack)
+                }
             }
-        }
     }
 }
 

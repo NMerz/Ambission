@@ -90,6 +90,9 @@ interface CreatedVideoDao {
     @Query("SELECT * FROM CreatedVideo WHERE uid = :uid")
     fun getVideo(uid: String): CreatedVideo
 
+    @Query("SELECT * FROM CreatedVideo WHERE uid = :uid")
+    fun getVideoLive(uid: String): Flow<CreatedVideo>
+
     @Query("UPDATE CreatedVideo SET type_specific_input = :typeSpecificInput WHERE uid = :uid")
     fun updateTypeSpecificInput(uid: String, typeSpecificInput: Map<String, String>)
 

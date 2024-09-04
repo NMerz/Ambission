@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,6 +37,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.functions.FirebaseFunctions
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
@@ -89,6 +91,14 @@ open class DatabaseAccess: ViewModel() {
         dbdao.setSegmentScripts(videoUid, segmentReturn.ordering, segmentReturn.orderableMapping)
     }
 
+    fun getSegmentUrls(videoUid: String): Map<String, String> {
+        return dbdao.getVideo(videoUid).segmentUrls
+    }
+
+    fun getSegmentUrlsLive(videoUid: String): LiveData<Map<String, String>> {
+        return dbdao.getVideoLive(videoUid).map { it.segmentUrls }.asLiveData()
+    }
+
     fun setSegmentUrls(videoUid: String, segmentUrls: Map<String, String>) {
         dbdao.setSegmentUrls(videoUid, segmentUrls)
     }
@@ -121,6 +131,7 @@ class ScriptGenerationScreenArgs(val uid: String) {
 
 fun getNewScript(resume: String, type: String, tone: String, callback: (String) -> Unit, listingText: String) {
     if (resume == "") {
+        Log.d("ScriptGeneration", "no resume found")
         callback("Please upload a resume first. You can do so under the Me tab.")
         return
     }
@@ -165,18 +176,24 @@ fun ScriptGenerationScreen(args: ScriptGenerationScreenArgs, navFunction: (Any) 
     var scriptProposal by rememberSaveable {
         mutableStateOf(vm.getUnifiedScript(args.uid))
     }
+    Log.d("ScriptGeneration", "initial proposal: $scriptProposal")
     var tone by rememberSaveable {
         mutableStateOf("professional")
     }
     var manualEntry by rememberSaveable {
         mutableStateOf(false)
     }
+    var singleCallAlreadyMade by rememberSaveable {
+        mutableStateOf(false)
+    }
 
-    val resume = vm.getResume().value
+    val resume = vm.getResume().observeAsState()
+    Log.d("ScriptGeneration", "initial resume: $resume")
 
-    if (scriptProposal == "") {
+    if (scriptProposal == "" && resume.value != null && !singleCallAlreadyMade) {
+        singleCallAlreadyMade = true
         getNewScript(
-            resume ?: "",
+            resume.value ?: "",
             vm.getNominalType(args.uid),
             tone,
             { newScript -> scriptProposal = newScript },
@@ -207,7 +224,10 @@ fun ScriptGenerationScreen(args: ScriptGenerationScreenArgs, navFunction: (Any) 
         }
     ) { innerPadding ->
         Column(
-            modifier = modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -276,7 +296,7 @@ fun ScriptGenerationScreen(args: ScriptGenerationScreenArgs, navFunction: (Any) 
                     }
                     IconButton(onClick = {
                         scriptProposal = ""
-                        getNewScript(resume ?: "", vm.getNominalType(args.uid), tone, {newScript -> scriptProposal = newScript}, vm.getListingText(args.uid))
+                        getNewScript(resume.value ?: "", vm.getNominalType(args.uid), tone, {newScript -> scriptProposal = newScript}, vm.getListingText(args.uid))
 
                     }) {
                         Icon(
@@ -315,9 +335,10 @@ fun getScriptSegments(script: String): SegmentReturn {
     var orderableMapping = HashMap<String, String>()
     val ordering = ArrayList<String>()
     for (scriptSentence in scriptSentences) {
-        if (scriptSentence == "") {
+        if (scriptSentence.matches( Regex("\\s*"))) {
             continue
         }
+        Log.d("ScriptGeneration", "segment sentence: " + scriptSentence[0].code)
         val newId = UUID.randomUUID().toString()
         ordering.add(newId)
         orderableMapping[newId] = scriptSentence
