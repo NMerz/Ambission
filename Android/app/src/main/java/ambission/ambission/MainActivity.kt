@@ -15,6 +15,7 @@ import ambission.ambission.ui.theme.AmbissionTheme
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
@@ -70,7 +71,7 @@ fun AppRoot() {
                 }
                 composable<RecordScreenArgs> {navBackStackEntry ->
                     val recordScreenArgs: RecordScreenArgs = navBackStackEntry.toRoute()
-                    RecordScreen(recordScreenArgs, navFunction = navController::navigateSingleTopTo, returnFunction = navController::popBackStack)
+                    RecordScreen(recordScreenArgs, navFunction = navController::navigateSingleTopTo, modifier = Modifier.wrapContentHeight(unbounded = true), returnFunction = navController::popBackStack)
                 }
             }
     }
