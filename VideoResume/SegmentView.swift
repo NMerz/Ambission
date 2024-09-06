@@ -110,7 +110,7 @@ struct SegmentView: View, Hashable {
             } else {
                 VStack {
                     ScrollView {
-                        ForEach($videoModel.segments, id: \.self, editActions: .delete) { segment in
+                        ForEach($videoModel.segments, id: \.self) { segment in
                             ZStack {
                                 VStack {
                                     HStack (alignment: .top) {
@@ -388,15 +388,20 @@ struct SegmentView: View, Hashable {
         var preferredTransform = toFix
         print(preferredTransform)
         print(preferredTransform.decomposed())
+        print(preferredTransform.decomposed().rotation == 0.0)
+
         if preferredTransform.decomposed().rotation > 0 {
-            preferredTransform.tx = desiredSize.width
+//            preferredTransform.tx = desiredSize.width
         } else if preferredTransform.decomposed().rotation < 0 {
-            preferredTransform.ty = desiredSize.height
+//            preferredTransform.ty = desiredSize.height
         } else {
             if inputSize.width != desiredSize.width || inputSize.height != desiredSize.height {
                 preferredTransform =  preferredTransform.scaledBy(x: desiredSize.width / inputSize.width, y: desiredSize.height / inputSize.height)
             }
         }
+        print(preferredTransform)
+        print(preferredTransform.decomposed())
+
         return preferredTransform
     }
     
@@ -410,10 +415,11 @@ struct SegmentView: View, Hashable {
         let videoTrack = finalMovie.addMutableTrack(
             withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
         let videoRotationComposition = AVMutableVideoComposition()
-        let compositionInstruction = AVMutableVideoCompositionInstruction()
         var durations: [String:CMTime] = [:]
-
+        var compositionInstructions = [AVVideoCompositionInstruction]()
+        
         for segment in videoModel.segments {
+            let compositionInstruction = AVMutableVideoCompositionInstruction()
             print("combination segment" + segment)
             if videoModel.segmentUrls[segment] == nil {
                 continue
@@ -430,20 +436,25 @@ struct SegmentView: View, Hashable {
             
             let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: videoTrack!)
             print("nat size")
-            var preferredTransform = try await segmentVideoTrack.load(.preferredTransform)
+            let preferredTransform = try await segmentVideoTrack.load(.preferredTransform)
             
-            layerInstruction.setTransform(SegmentView.fixPreferredTransform(preferredTransform, inputSize: videoTrack!.naturalSize, desiredSize: CGSize(width: 1080, height: 1920)), at: currentTime)
+            let modifiedTransform = SegmentView.fixPreferredTransform(preferredTransform, inputSize: segmentVideoTrack.naturalSize, desiredSize: CGSize(width: 1080, height: 1920))
+            layerInstruction.setTransform(modifiedTransform, at: currentTime)
+            
 
-            
+
+            compositionInstruction.timeRange = CMTimeRange(start: currentTime, duration: segmentDuration)
             currentTime = CMTimeAdd(currentTime, segmentDuration)
 //            layerInstruction.setOpacity(0.0, at: currentTime)
             print(currentTime)
+//            layerInstruction.setTransform(modifiedTransform.inverted(), at: currentTime)
             compositionInstruction.layerInstructions.append(layerInstruction)
             print("layer instructions")
             print(compositionInstruction.layerInstructions)
+            compositionInstructions.append(compositionInstruction)
         }
-        compositionInstruction.timeRange = videoTrack!.timeRange
-        videoRotationComposition.instructions = [compositionInstruction]
+        
+        videoRotationComposition.instructions = compositionInstructions
         videoRotationComposition.renderSize = CGSize(width: 1080, height: 1920)
         videoRotationComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
         

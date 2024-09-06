@@ -263,9 +263,9 @@ struct EditClipView: View, Hashable {
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionTrack)
         print("nat size")
         print(composition.naturalSize)
-        print(SegmentView.fixPreferredTransform(preferredTransform, inputSize: composition.naturalSize, desiredSize: expectedSize).decomposed())
+        print(preferredTransform.decomposed())
 
-        layerInstruction.setTransform(SegmentView.fixPreferredTransform(preferredTransform, inputSize: composition.naturalSize, desiredSize: expectedSize), at: .zero)
+        layerInstruction.setTransform(preferredTransform, at: .zero)
         compositionInstruction2.layerInstructions.append(layerInstruction)
         print("layer instructions")
         print(compositionInstruction2.layerInstructions)

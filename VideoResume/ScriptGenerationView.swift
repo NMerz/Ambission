@@ -220,6 +220,9 @@ struct ScriptGenerationView: View, Hashable {
         var orderableMapping: [String: String] = [:]
         var ordering: [String] = []
         for scriptSentence in scriptSentences {
+            if scriptSentence == "" {
+                continue
+            }
             let newId = UUID().uuidString
             ordering.append(newId)
             orderableMapping[newId] = String(scriptSentence)
