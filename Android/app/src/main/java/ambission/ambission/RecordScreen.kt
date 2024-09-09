@@ -63,11 +63,7 @@ import kotlin.math.max
 class RecordViewModel: DatabaseAccess() {
 
 
-    fun setSegmentUrl(videoUid: String, segment: String, newUrl: String) {
-        val oldUrls = getSegmentUrls(videoUid).toMutableMap()
-        oldUrls[segment] = newUrl
-        setSegmentUrls(videoUid, oldUrls)
-    }
+
 }
 
 @Serializable
@@ -75,7 +71,7 @@ class RecordScreenArgs(val segmentId: String, val videoUid: String) {
 }
 
 @Composable
-fun RecordScreen(args: RecordScreenArgs, navFunction: (Any) -> Unit, returnFunction: () -> Boolean, modifier: Modifier = Modifier, vm: RecordViewModel = viewModel()) {
+fun RecordScreen(args: RecordScreenArgs, returnFunction: () -> Boolean, modifier: Modifier = Modifier, vm: RecordViewModel = viewModel()) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -145,7 +141,8 @@ fun RecordScreen(args: RecordScreenArgs, navFunction: (Any) -> Unit, returnFunct
     contentValues.put(MediaStore.Video.Media.TITLE, videoFileName)
     contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName)
 
-    localContext.getExternalFilesDir(null)?.let { Log.d("RecordScreen", it.absolutePath) }
+//    localContext.getExternalFilesDir(null)?.let { Log.d("RecordScreen", it.absolutePath) }
+    // These are actually stored in /sdcard/Movies
     val fileOptions = MediaStoreOutputOptions.Builder(resolver,  MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
         .setContentValues(contentValues)
         .build()

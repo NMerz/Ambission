@@ -71,7 +71,11 @@ fun AppRoot() {
                 }
                 composable<RecordScreenArgs> {navBackStackEntry ->
                     val recordScreenArgs: RecordScreenArgs = navBackStackEntry.toRoute()
-                    RecordScreen(recordScreenArgs, navFunction = navController::navigateSingleTopTo, modifier = Modifier.wrapContentHeight(unbounded = true), returnFunction = navController::popBackStack)
+                    RecordScreen(recordScreenArgs, modifier = Modifier.wrapContentHeight(unbounded = true), returnFunction = navController::popBackStack)
+                }
+                composable<EditScreenArgs> {navBackStackEntry ->
+                    val editScreenArgs: EditScreenArgs = navBackStackEntry.toRoute()
+                    EditScreen(editScreenArgs, modifier = Modifier.wrapContentHeight(unbounded = true), returnFunction = navController::popBackStack)
                 }
             }
     }

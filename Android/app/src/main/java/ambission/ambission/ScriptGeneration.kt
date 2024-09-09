@@ -114,6 +114,12 @@ open class DatabaseAccess: ViewModel() {
     fun setSegmentTexts(videoUid: String, segmentTexts: Map<String, String>) {
         dbdao.setSegmentTexts(videoUid, segmentTexts)
     }
+
+    fun setSegmentUrl(videoUid: String, segment: String, newUrl: String) {
+        val oldUrls = getSegmentUrls(videoUid).toMutableMap()
+        oldUrls[segment] = newUrl
+        setSegmentUrls(videoUid, oldUrls)
+    }
 }
 
 class ScriptGeneration: DatabaseAccess() {

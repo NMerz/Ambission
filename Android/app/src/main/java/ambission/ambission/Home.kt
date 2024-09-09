@@ -131,10 +131,12 @@ fun HomeScreen(name: String, navFunction: (Any) -> Unit, modifier: Modifier = Mo
         }
 
 
-        Button(onClick = { //TODO: finish adding pdf; I was in the middle of this. Code here is untested. PDF to be read by pdfbox - see gradle
-            openResume.launch(arrayOf("application/pdf"))
-        }) {
-            Text("Add your resume")
+        Column (modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
+            Button(onClick = { //TODO: finish adding pdf; I was in the middle of this. Code here is untested. PDF to be read by pdfbox - see gradle
+                openResume.launch(arrayOf("application/pdf"))
+            }) {
+                Text("Add your resume")
+            }
         }
 
     } else {
@@ -146,33 +148,34 @@ fun HomeScreen(name: String, navFunction: (Any) -> Unit, modifier: Modifier = Mo
 @Composable
 fun CreationScreen(name: String, navFunction: (Any) -> Unit, modifier: Modifier = Modifier, vm: Home) {
     val videos = vm.getAllVideos().observeAsState()
-    Row {
-        Button(onClick = {
-            Log.i("AMB", "foobar3")
-            vm.addVideo(CreatedVideo(UUID.randomUUID().toString(), "Untitled Video", "general", "", typeSpecificInput = mapOf()))
-        }, modifier = modifier) {
-            Text(
-                text = "General Intro",
-                modifier = modifier
-            )
-        }
-        Button(onClick = {
-            Log.i("AMB", "foobar3")
-            val newId = UUID.randomUUID().toString()
-            vm.addVideo(CreatedVideo(newId, "Untitled Video", "recruiter", "", typeSpecificInput = mapOf()))
-            navFunction(ScriptGenerationScreenArgs(newId))
-        }, modifier = modifier) {
-            Text(
-                text = "Recruiter Intro",
-                modifier = modifier
-            )
-        }
-    }
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row {
+            Button(onClick = {
+                Log.i("AMB", "foobar3")
+                vm.addVideo(CreatedVideo(UUID.randomUUID().toString(), "Untitled Video", "general", "", typeSpecificInput = mapOf()))
+            }, modifier = modifier) {
+                Text(
+                    text = "General Intro",
+                    modifier = modifier
+                )
+            }
+            Button(onClick = {
+                Log.i("AMB", "foobar3")
+                val newId = UUID.randomUUID().toString()
+                vm.addVideo(CreatedVideo(newId, "Untitled Video", "recruiter", "", typeSpecificInput = mapOf()))
+                navFunction(ScriptGenerationScreenArgs(newId))
+            }, modifier = modifier) {
+                Text(
+                    text = "Recruiter Intro",
+                    modifier = modifier
+                )
+            }
+        }
         if (videos.value != null) {
             for (video in videos.value!!) {
                 Row (

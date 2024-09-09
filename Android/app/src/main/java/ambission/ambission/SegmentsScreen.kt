@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -105,19 +108,56 @@ fun SegmentsScreen(args: SegmentsScreenArgs, navFunction: (Any) -> Unit, modifie
 //                        Log.d("SegmentScreen",localContext.filesDir.resolve(segmentUrlsState.value?.get(segment)!!).absolutePath + "url is a file" + localContext.filesDir.resolve(segmentUrlsState.value?.get(segment)!!).isFile.toString())
 //                        localContext.grantUriPermission(localContext.packageName, uri, FLAG_GRANT_READ_URI_PERMISSION)
 
-                        AndroidView(
-                            modifier = Modifier.width(100.dp).height((100 * 16 / 9).dp),
-                            factory = { context ->
-                                val player = ExoPlayer.Builder(localContext).build()
-                                MediaItem.fromUri(segmentUrlsState.value?.get(segment)!!)
-                                    .let { player.setMediaItem(it) }
-                                player.prepare()
-                                player.play()
-                                val playerView = PlayerView(context)
-                                playerView.player = player
-                                playerView
+                        Column {
+                            Box(contentAlignment = Alignment.BottomCenter) {
+                                AndroidView(
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height((100 * 16 / 9).dp),
+                                    factory = { context ->
+                                        val player = ExoPlayer.Builder(localContext).build()
+                                        MediaItem.fromUri(segmentUrlsState.value?.get(segment)!!)
+                                            .let { player.setMediaItem(it) }
+                                        player.prepare()
+                                        player.play()
+                                        val playerView = PlayerView(context)
+                                        playerView.player = player
+                                        playerView
+                                    }
+                                )
+                                Row {
+                                    IconButton(onClick = {
+                                        navFunction(RecordScreenArgs(segment, videoUid = args.uid))
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        val segmentUrls = vm.getSegmentUrls(args.uid).toMutableMap()
+                                        segmentUrls.remove(segment)
+                                        vm.setSegmentUrls(args.uid, segmentUrls)
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                }
+
+
                             }
-                        )
+                            IconButton(onClick = {
+                                navFunction(EditScreenArgs(videoUid = args.uid, segmentUid = segment))
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCut,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+
                     } else {
                         IconButton(onClick = {
                             navFunction(RecordScreenArgs(segment, videoUid = args.uid))
