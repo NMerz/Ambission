@@ -1,5 +1,6 @@
 package ambission.ambission
 
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
@@ -69,17 +70,23 @@ fun EditScreen(args: EditScreenArgs, returnFunction: () -> Boolean, modifier: Mo
                 playerView
             }
         )
-        Row {
-            IconButton(onClick = {
-                //TODO: do cut
-                Log.d(
-                    "EditScreen",
-                    "cutting at " + player.value.currentPosition
-                ) // current time in millis
-                var clipStart = 0L
-                var clipEnd = player.value.currentPosition
-                val newMediaItem = MediaItem.Builder().setUri(currentUri.value).setClippingConfiguration(ClippingConfiguration.Builder().setStartPositionMs(clipStart).setEndPositionMs(clipEnd).build()).build()
 
+        val saveEdited = {keepSide: String ->
+            var clipStart = 0L
+            var clipEnd = player.value.duration
+            if (keepSide == "start") {
+                clipEnd = player.value.currentPosition
+            }
+            if (keepSide == "end") {
+                clipStart = player.value.currentPosition
+            }
+            if (clipStart != clipEnd) {
+
+                val newMediaItem = MediaItem.Builder().setUri(currentUri.value)
+                    .setClippingConfiguration(
+                        ClippingConfiguration.Builder().setStartPositionMs(clipStart)
+                            .setEndPositionMs(clipEnd).build()
+                    ).build()
 
 
                 val videoFileName = "video_" + System.currentTimeMillis()
@@ -103,8 +110,9 @@ fun EditScreen(args: EditScreenArgs, returnFunction: () -> Boolean, modifier: Mo
                             currentUri.value = newOutFile.absolutePath
                         }
 
-                        override fun onError(composition: Composition, result: ExportResult,
-                                             exception: ExportException
+                        override fun onError(
+                            composition: Composition, result: ExportResult,
+                            exception: ExportException
                         ) {
                             Log.d("EditScreen", "export failure $exception")
 
@@ -117,6 +125,33 @@ fun EditScreen(args: EditScreenArgs, returnFunction: () -> Boolean, modifier: Mo
 
                 Transformer.Builder(localContext).addListener(transformerListener)
                     .build().start(newMediaItem, newOutFile.absolutePath)
+            }
+        }
+
+        Row {
+            IconButton(onClick = {
+                //TODO: do cut
+                Log.d(
+                    "EditScreen",
+                    "cutting at " + player.value.currentPosition
+                ) // current time in millis
+
+                val builder: AlertDialog.Builder = AlertDialog.Builder(localContext)
+                builder
+                    .setMessage("Cut segment")
+                    .setTitle("Choose kept side")
+                    .setNegativeButton("Keep start") { dialog, which ->
+                        saveEdited("start")
+                    }.setNeutralButton("Cancel") {_, _ ->
+                        return@setNeutralButton
+                    }
+                    .setPositiveButton("Keep end") { dialog, which ->
+                        saveEdited("end")
+                    }.setCancelable(true)
+
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+
 
             }) {
 
