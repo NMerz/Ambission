@@ -1,5 +1,6 @@
 package ambission.ambission
 
+import android.content.Context
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.media.MediaPlayer
 import android.net.Uri
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,7 +44,14 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.Transformer
 import androidx.media3.ui.PlayerView
 import kotlinx.serialization.Serializable
 import java.io.File
@@ -89,6 +98,7 @@ fun SegmentsScreen(args: SegmentsScreenArgs, navFunction: (Any) -> Unit, modifie
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            val localContext = LocalContext.current
             Text(args.uid)
             for (segment in segmentsState) {
                 Log.d("SegmentDisplay", segment)
@@ -97,7 +107,6 @@ fun SegmentsScreen(args: SegmentsScreenArgs, navFunction: (Any) -> Unit, modifie
                 Row (modifier = modifier.padding(20.dp)) {
                     if (segmentUrlsState.value?.get(segment) != null ) {
                         //TODO: untested skeleton
-                        val localContext = LocalContext.current
 
 //                        val uri = FileProvider.getUriForFile(
 //                            Objects.requireNonNull(localContext),
@@ -179,6 +188,46 @@ fun SegmentsScreen(args: SegmentsScreenArgs, navFunction: (Any) -> Unit, modifie
                         })
                 }
             }
+            Button(onClick = {
+                combineClips(localContext = localContext, segments = segmentsState, segmentUrls = segmentUrlsState.value.orEmpty(), navFunction = navFunction)
+            }) {
+                Text("Combine")
+            }
         }
     }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+fun combineClips(localContext: Context, segments: List<String>, segmentUrls: Map<String, String>,  navFunction: (Any) -> Unit) {
+    val videoFileName = "combined_" + System.currentTimeMillis()
+    val newOutFile: File = File(localContext.externalCacheDir, videoFileName)
+
+    val transformerListener: Transformer.Listener =
+        object : Transformer.Listener {
+            override fun onCompleted(composition: Composition, result: ExportResult) {
+                Log.d("EditScreen", "export success")
+                navFunction(ExportScreenArgs(newOutFile.absolutePath))
+            }
+
+            override fun onError(
+                composition: Composition, result: ExportResult,
+                exception: ExportException
+            ) {
+                Log.d("EditScreen", "export failure $exception")
+
+            }
+        }
+
+    // These current get saved to /sdcard/Android/data/ambission.ambission/cache
+
+    Log.d("EditScreen", "new uri: " + newOutFile.absolutePath)
+
+    val videoComponents = ArrayList<EditedMediaItem>()
+    for (segment in segments) {
+        segmentUrls[segment]
+            ?.let { videoComponents.add(EditedMediaItem.Builder( MediaItem.fromUri(it)).build())}
+    }
+
+    Transformer.Builder(localContext).addListener(transformerListener)
+        .build().start(Composition.Builder(EditedMediaItemSequence(videoComponents)).build(), newOutFile.absolutePath)
 }

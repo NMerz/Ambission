@@ -77,6 +77,10 @@ fun AppRoot() {
                     val editScreenArgs: EditScreenArgs = navBackStackEntry.toRoute()
                     EditScreen(editScreenArgs, modifier = Modifier.wrapContentHeight(unbounded = true), returnFunction = navController::popBackStack)
                 }
+                composable<ExportScreenArgs> {navBackStackEntry ->
+                    val exportScreenArgs: ExportScreenArgs = navBackStackEntry.toRoute()
+                    ExportScreen(exportScreenArgs, modifier = Modifier.wrapContentHeight(unbounded = true))
+                }
             }
     }
 }
