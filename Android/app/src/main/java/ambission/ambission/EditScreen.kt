@@ -2,8 +2,11 @@ package ambission.ambission
 
 import android.app.AlertDialog
 import android.content.ContentValues
-import android.os.Environment
+import android.content.Context
 import android.provider.MediaStore
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Column
@@ -13,27 +16,38 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.ClippingConfiguration
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.OverlayEffect
+import androidx.media3.effect.OverlaySettings
+import androidx.media3.effect.TextOverlay
+import androidx.media3.effect.TextureOverlay
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
 import androidx.media3.ui.PlayerView
+import com.google.common.collect.ImmutableList
 import kotlinx.serialization.Serializable
-import okio.Path.Companion.toPath
 import java.io.File
 
 
@@ -161,6 +175,14 @@ fun EditScreen(args: EditScreenArgs, returnFunction: () -> Boolean, modifier: Mo
                 )
             }
             IconButton(onClick = {
+                addText(currentUri.value, localContext) { currentUri.value = it }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.TextFields,
+                    contentDescription = ""
+                )
+            }
+            IconButton(onClick = {
                 vm.setSegmentUrl(args.videoUid, args.segmentUid, currentUri.value)
                 //TODO: set new url
                 returnFunction()
@@ -172,4 +194,58 @@ fun EditScreen(args: EditScreenArgs, returnFunction: () -> Boolean, modifier: Mo
             }
         }
     }
+}
+
+
+//Apache 2.0 https://github.com/androidx/media/tree/release
+@OptIn(UnstableApi::class)
+fun addText(baseUri: String, localContext: Context, setNew: (String) -> Unit) {
+    val mediaItem = MediaItem.Builder().setUri(baseUri).build()
+    val editedMediaItemBuilder = EditedMediaItem.Builder(mediaItem)
+    val effects: ImmutableList.Builder<Effect> = ImmutableList.Builder<Effect>()
+    effects.add()
+    val overlaySettings =
+        OverlaySettings.Builder()
+            .build()
+    val overlayText =
+        SpannableString("foobar")
+    overlayText.setSpan(
+        ForegroundColorSpan(Color.Red.toArgb()),  /* start= */
+        0,
+        overlayText.length,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+    val textOverlay = TextOverlay.createStaticTextOverlay(overlayText, overlaySettings)
+    val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
+    effects.add(OverlayEffect(overlaysBuilder.add(textOverlay).build()))
+
+    editedMediaItemBuilder.setEffects(Effects(ImmutableList.of(), effects.build()))
+    val compositionBuilder =
+        Composition.Builder(EditedMediaItemSequence(editedMediaItemBuilder.build()))
+
+    val videoFileName = "video_" + System.currentTimeMillis()
+    val newOutFile: File = File(localContext.externalCacheDir, videoFileName)
+
+    val transformerListener: Transformer.Listener =
+        object : Transformer.Listener {
+            override fun onCompleted(composition: Composition, result: ExportResult) {
+                Log.d("EditScreen", "export success")
+                setNew(newOutFile.absolutePath)
+            }
+
+            override fun onError(
+                composition: Composition, result: ExportResult,
+                exception: ExportException
+            ) {
+                Log.d("EditScreen", "export failure $exception")
+
+            }
+        }
+
+    // These current get saved to /sdcard/Android/data/ambission.ambission/cache
+
+    Log.d("EditScreen", "new uri: " + newOutFile.absolutePath)
+
+    Transformer.Builder(localContext).addListener(transformerListener)
+        .build().start(compositionBuilder.build(), newOutFile.absolutePath)
 }
